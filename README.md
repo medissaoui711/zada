@@ -40,7 +40,7 @@ Built for developers who want **flexibility**, **privacy**, and **power** in the
 | 🔌 **Multi-Provider Freedom** | Use local models (free), fast cloud APIs (Groq), or premium models (OpenAI, Claude) |
 | 🏔️ **Local-First Privacy** | Run entirely offline. Your code never leaves your machine |
 | 🏭 **Production-Ready** | 1100+ lines of clean Python, SQLite persistence, rich CLI |
-| 📚 **Rich Resource Library** | 47 agents, 59 skills, 12 rules from everything-claude-code |
+| 📚 **Rich Resource Library** | 47 specialized agents, 59 categorized skills, 12 coding rules |
 | 🎮 **19 Powerful Commands** | `/plan`, `/code`, `/test`, `/review`, `/fix`, `/build`, and more |
 | 🐧 **Cross-Platform** | Windows, Linux, macOS |
 
