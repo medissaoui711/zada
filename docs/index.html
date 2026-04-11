@@ -4,56 +4,289 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>APEX - AI Coding Assistant</title>
+    <meta name="description" content="Multi-Provider AI Coding Assistant & Orchestration Platform">
+    <meta name="author" content="medissaoui711">
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: system-ui, -apple-system, sans-serif;
-            max-width: 800px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+            color: #e0e0e0;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
             margin: 0 auto;
             padding: 2rem;
-            line-height: 1.6;
-            background: #0a0a0a;
-            color: #e0e0e0;
         }
-        h1 { color: #00b4d8; border-bottom: 2px solid #00b4d8; }
-        a { color: #00b4d8; text-decoration: none; }
-        a:hover { text-decoration: underline; }
-        .badge { display: inline-block; background: #1e1e1e; padding: 0.2rem 0.5rem; border-radius: 8px; margin: 0.2rem; font-size: 0.8rem; }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 4rem 0;
+            border-bottom: 1px solid rgba(0, 180, 216, 0.3);
+        }
+
+        .logo {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            font-size: 3rem;
+            background: linear-gradient(135deg, #00b4d8, #0077b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .tagline {
+            font-size: 1.2rem;
+            color: #888;
+            margin-top: 1rem;
+        }
+
+        /* Badges */
+        .badges {
+            margin: 2rem 0;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .badge {
+            background: rgba(0, 180, 216, 0.1);
+            border: 1px solid rgba(0, 180, 216, 0.3);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+
+        /* Features Grid */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 4rem 0;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 180, 216, 0.2);
+            border-color: rgba(0, 180, 216, 0.5);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-card h3 {
+            color: #00b4d8;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Commands Table */
+        .commands {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin: 3rem 0;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        th {
+            color: #00b4d8;
+            font-weight: 600;
+        }
+
+        code {
+            background: rgba(0, 180, 216, 0.1);
+            padding: 0.2rem 0.4rem;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+        }
+
+        /* Quick Start */
+        .quick-start {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin: 3rem 0;
+        }
+
+        pre {
+            background: #0d1117;
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            border: 1px solid rgba(0, 180, 216, 0.2);
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 2rem 0;
+            border-top: 1px solid rgba(0, 180, 216, 0.3);
+            margin-top: 3rem;
+            color: #666;
+        }
+
+        .btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #00b4d8, #0077b6);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            margin: 0.5rem;
+            transition: transform 0.3s;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #00b4d8;
+            color: #00b4d8;
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 1rem; }
+            h1 { font-size: 2rem; }
+            .features { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
-    <h1>🏔️ APEX</h1>
-    <p><strong>Multi-Provider AI Coding Assistant & Orchestration Platform</strong></p>
-    
-    <p>
-        <span class="badge">🐍 Python 3.9+</span>
-        <span class="badge">🦙 Ollama</span>
-        <span class="badge">☁️ 6 Cloud Providers</span>
-    </p>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">🏔️</div>
+            <h1>APEX</h1>
+            <p class="tagline">Multi-Provider AI Coding Assistant & Orchestration Platform</p>
+            
+            <div class="badges">
+                <span class="badge">🐍 Python 3.9+</span>
+                <span class="badge">🦙 Ollama</span>
+                <span class="badge">☁️ 6 Cloud Providers</span>
+                <span class="badge">🤖 47 Agents</span>
+                <span class="badge">🛠️ 59 Skills</span>
+                <span class="badge">🎮 19 Commands</span>
+            </div>
+            
+            <div>
+                <a href="https://github.com/medissaoui711/apex-core" class="btn">📦 GitHub Repository</a>
+                <a href="https://github.com/medissaoui711/apex-core/releases" class="btn btn-outline">📥 Releases</a>
+            </div>
+        </div>
 
-    <h2>✨ Features</h2>
-    <ul>
-        <li>🔌 <strong>Multi-Provider</strong> - Local + 5 Cloud APIs</li>
-        <li>🤖 <strong>47 Agents</strong> - Python, TypeScript, Go, Rust, Java, C++</li>
-        <li>🛠️ <strong>59 Skills</strong> - Security, Testing, Frontend, Backend</li>
-        <li>🎮 <strong>19 Commands</strong> - plan, code, test, review, fix, build</li>
-    </ul>
+        <!-- Features -->
+        <div class="features">
+            <div class="feature-card">
+                <div class="feature-icon">🔌</div>
+                <h3>Multi-Provider</h3>
+                <p>Local (Ollama) + 5 Cloud APIs: OpenAI, Groq, Anthropic, Gemini, Together.ai</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🏔️</div>
+                <h3>Local-First Privacy</h3>
+                <p>Run entirely offline. Your code never leaves your machine.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🏭</div>
+                <h3>Production-Ready</h3>
+                <p>1100+ lines of clean Python, SQLite persistence, rich CLI interface.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🤖</div>
+                <h3>47 Specialized Agents</h3>
+                <p>Python, TypeScript, Go, Rust, Java, C++ experts for code review, planning, building.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🛠️</div>
+                <h3>59 Categorized Skills</h3>
+                <p>Security, Testing, Frontend, Backend, DevOps, Media, Business.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎮</div>
+                <h3>19 Powerful Commands</h3>
+                <p>/plan, /code, /test, /review, /fix, /build, and more.</p>
+            </div>
+        </div>
 
-    <h2>🚀 Quick Start</h2>
-    <pre><code>git clone https://github.com/medissaoui711/apex-core.git
+        <!-- Commands Table -->
+        <div class="commands">
+            <h2 style="margin-bottom: 1rem;">🎮 Commands Reference</h2>
+            <table>
+                <thead>
+                    <tr><th>Command</th><th>Description</th><th>Example</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code>/agents</code></td><td>List all agents</td><td><code>/agents python</code></td></tr>
+                    <tr><td><code>/skills</code></td><td>Skills summary</td><td><code>/skills all</code></td></tr>
+                    <tr><td><code>/plan</code></td><td>Development plan</td><td><code>/plan REST API</code></td></tr>
+                    <tr><td><code>/code</code></td><td>Generate code</td><td><code>/code factorial</code></td></tr>
+                    <tr><td><code>/test</code></td><td>Write tests</td><td><code>/test sum function</code></td></tr>
+                    <tr><td><code>/review</code></td><td>Code review</td><td><code>/review app.py</code></td></tr>
+                    <tr><td><code>/fix</code></td><td>Fix issues</td><td><code>/fix bug.py</code></td></tr>
+                    <tr><td><code>/build</code></td><td>Build solutions</td><td><code>/build npm error</code></td></tr>
+                    <tr><td><code>/provider</code></td><td>Switch provider</td><td><code>/provider groq</code></td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Quick Start -->
+        <div class="quick-start">
+            <h2 style="margin-bottom: 1rem;">🚀 Quick Start</h2>
+            <pre><code>git clone https://github.com/medissaoui711/apex-core.git
 cd apex-core
 python -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements.txt
 python copy_resources.py
 python apex.py</code></pre>
+            <p style="margin-top: 1rem;">💡 First run will prompt you to select a provider (Local/Cloud).</p>
+        </div>
 
-    <h2>📦 Resources</h2>
-    <ul>
-        <li><a href="https://github.com/medissaoui711/apex-core">GitHub Repository</a></li>
-        <li><a href="https://github.com/medissaoui711/apex-core/releases">Releases</a></li>
-    </ul>
-
-    <hr>
-    <p style="text-align: center;">Built with 🏔️ by medissaoui711</p>
+        <!-- Footer -->
+        <div class="footer">
+            <p>Built with 🏔️ by <strong>medissaoui711</strong></p>
+            <p style="font-size: 0.8rem;">© 2024 APEX. All rights reserved.</p>
+        </div>
+    </div>
 </body>
 </html>
