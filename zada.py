@@ -228,17 +228,17 @@ class ZadaCore:
         self.current_workspace = Path.cwd()
         self.conversation_history: list[dict[str, Any]] = []
         
-        # اختيار مزود الخدمة
-        console.print("\n[bold cyan]🔌 جاري فحص مزودي الخدمة...[/bold cyan]")
+        # Select provider
+        console.print("\n[bold cyan]🔌 Checking available providers...[/bold cyan]")
         self.current_provider = self.select_provider_interactive()
-        console.print(f"[green]✅ تم اختيار المزود: {self.current_provider}[/green]")
+        console.print(f"[green]✅ Provider selected: {self.current_provider}[/green]")
         
-        # تحميل الموارد
+        # Load resources
         self.agents = self.load_agents()
         self.skills = self.load_skills()
         self.rules = self.load_rules()
         
-        # إضافة AgentShield
+        # Add AgentShield
         self.shield = AgentShield()
         
         console.print(f"[green]✅ ZADA initialized with AgentShield[/green]")
@@ -267,7 +267,7 @@ class ZadaCore:
         return agents
     
     def load_skills(self) -> list[dict[str, Any]]:
-        """تحميل جميع المهارات من مجلد skills مباشرة"""
+        """Load all skills from the skills directory directly"""
         skills: list[dict[str, Any]] = []
         skills_dir = self.zada_home / "skills"
 
@@ -278,7 +278,7 @@ class ZadaCore:
                         if skill_file.name.endswith('.metadata.json'):
                             continue
 
-                        # قراءة الوصف من ملف metadata إذا وجد
+                        # Read description from metadata file if found
                         description = ""
                         json_file = category_dir / f"{skill_file.stem}.metadata.json"
                         if json_file.exists():
@@ -319,14 +319,14 @@ class ZadaCore:
         return rules
     
     def ask_ollama(self, prompt: str) -> str:
-        """إرسال طلب إلى LLM (يدعم Local و Cloud)"""
+        """Send request to LLM (supports Local and Cloud)"""
         return self.ask_llm(prompt, "local")
 
-    # ========== دوال Cloud APIs ==========
+    # ========== Cloud APIs ==========
     def ask_openai(self, prompt: str) -> str:
-        """إرسال طلب إلى OpenAI API"""
+        """Send request to OpenAI API"""
         if not OPENAI_API_KEY:
-            return "❌ OpenAI API key غير موجود. قم بتعيين OPENAI_API_KEY في المتغيرات البيئية"
+            return "❌ OpenAI API key not found. Please set OPENAI_API_KEY in environment variables"
         try:
             import requests
             response = requests.post(
@@ -350,9 +350,9 @@ class ZadaCore:
             return f"❌ OpenAI Error: {str(e)}"
 
     def ask_anthropic(self, prompt: str) -> str:
-        """إرسال طلب إلى Anthropic Claude API"""
+        """Send request to Anthropic Claude API"""
         if not ANTHROPIC_API_KEY:
-            return "❌ Anthropic API key غير موجود"
+            return "❌ Anthropic API key not found"
         try:
             import requests
             response = requests.post(
@@ -377,9 +377,9 @@ class ZadaCore:
             return f"❌ Anthropic Error: {str(e)}"
 
     def ask_gemini(self, prompt: str) -> str:
-        """إرسال طلب إلى Google Gemini API"""
+        """Send request to Google Gemini API"""
         if not GEMINI_API_KEY:
-            return "❌ Gemini API key غير موجود"
+            return "❌ Gemini API key not found"
         try:
             import requests
             response = requests.post(
@@ -394,9 +394,9 @@ class ZadaCore:
             return f"❌ Gemini Error: {str(e)}"
 
     def ask_groq(self, prompt: str) -> str:
-        """إرسال طلب إلى Groq API (سريع جداً)"""
+        """Send request to Groq API (very fast)"""
         if not GROQ_API_KEY:
-            return "❌ Groq API key غير موجود"
+            return "❌ Groq API key not found"
         try:
             import requests
             response = requests.post(
@@ -420,9 +420,9 @@ class ZadaCore:
             return f"❌ Groq Error: {str(e)}"
 
     def ask_together(self, prompt: str) -> str:
-        """إرسال طلب إلى Together.ai API"""
+        """Send request to Together.ai API"""
         if not TOGETHER_API_KEY:
-            return "❌ Together.ai API key غير موجود"
+            return "❌ Together.ai API key not found"
         try:
             import requests
             response = requests.post(
@@ -445,9 +445,9 @@ class ZadaCore:
         except Exception as e:
             return f"❌ Together.ai Error: {str(e)}"
 
-    # ========== إدارة المصادر (Local / Cloud) ==========
+    # ========== Manage Resources (Local / Cloud) ==========
     def get_available_providers(self) -> list[dict[str, Any]]:
-        """الحصول على قائمة بمزودي الخدمة المتاحين"""
+        """Get the list of available providers"""
         providers: list[dict[str, Any]] = [
             {"name": "local", "display": "🏔️ Local (Ollama)", "model": OLLAMA_MODEL, "available": True}
         ]
@@ -464,62 +464,62 @@ class ZadaCore:
         return providers
 
     def select_provider_interactive(self) -> str:
-        """عرض مزودي الخدمة المتاحين وطلب اختيار"""
+        """Display available providers and request selection"""
         providers = self.get_available_providers()
-        console.print("\n[bold cyan]🔌 مزودي الخدمة المتاحين:[/bold cyan]")
+        console.print("\n[bold cyan]🔌 Available Providers:[/bold cyan]")
         for i, p in enumerate(providers, 1):
             console.print(f"  {i}. {p['display']} [dim]({p['model']})[/dim]")
-        console.print("\n[bold yellow]💡 الاقتراحات:[/bold yellow]")
-        console.print("  • [green]Local (Ollama)[/green] - مجاني، يعمل بدون إنترنت")
-        console.print("  • [green]Groq[/green] - سريع جداً، يتطلب مفتاح API مجاني")
-        console.print("  • [green]OpenAI[/green] - قوي، يتطلب اشتراك")
+        console.print("\n[bold yellow]💡 Suggestions:[/bold yellow]")
+        console.print("  • [green]Local (Ollama)[/green] - Free, works offline")
+        console.print("  • [green]Groq[/green] - Very fast, free API key required")
+        console.print("  • [green]OpenAI[/green] - Powerful, requires subscription")
         while True:
             try:
-                choice = console.input(f"\n[bold cyan]🔧 اختر رقم المزود (1-{len(providers)}): [/bold cyan]").strip()
+                choice = console.input(f"\n[bold cyan]🔧 Choose provider number (1-{len(providers)}): [/bold cyan]").strip()
                 if choice.isdigit():
                     idx = int(choice) - 1
                     if 0 <= idx < len(providers):
                         selected = providers[idx]["name"]
-                        console.print(f"[green]✅ تم اختيار: {providers[idx]['display']}[/green]")
+                        console.print(f"[green]✅ Selected: {providers[idx]['display']}[/green]")
                         return selected
-                    console.print(f"[red]❌ رقم غير صالح. اختر من 1 إلى {len(providers)}[/red]")
+                    console.print(f"[red]❌ Invalid number. Choose from 1 to {len(providers)}[/red]")
                 else:
-                    console.print("[red]❌ يرجى إدخال رقم صحيح[/red]")
+                    console.print("[red]❌ Please enter a valid number[/red]")
             except KeyboardInterrupt:
-                console.print("\n[yellow]⚠️ تم الإلغاء، سيتم استخدام Local[/yellow]")
+                console.print("\n[yellow]⚠️ Cancelled, using Local[/yellow]")
                 return "local"
 
     def ask_llm(self, prompt: str, provider: str = None) -> str:
-        """إرسال طلب مع فحص أمني"""
+        """Send request with security check"""
         
-        # 1. فحص الـ prompt
+        # 1. Validate prompt
         valid, msg = self.shield.validate_prompt(prompt)
         if not valid:
             self.shield.audit("BLOCKED_PROMPT", {"prompt": prompt[:100], "reason": msg}, "WARNING")
             return f"🔒 Security: {msg}"
         
-        # 2. فحص معدل الطلبات
+        # 2. Check rate limit
         valid, msg = self.shield.check_rate_limit()
         if not valid:
             return f"🔒 Security: {msg}"
         
-        # 3. تسجيل الطلب
+        # 3. Log request
         provider = provider or getattr(self, 'current_provider', 'local')
         self.shield.audit("LLM_REQUEST", {"provider": provider, "prompt_len": len(prompt)})
         
-        # 4. تنفيذ الطلب الأصلي
+        # 4. Execute original request
         if provider == "local":
             try:
-                console.print("[dim]⏳ جاري الاتصال بـ Ollama...[/dim]")
+                console.print("[dim]⏳ Connecting to Ollama...[/dim]")
                 result = subprocess.run(
                     ["ollama", "run", OLLAMA_MODEL, prompt],
                     capture_output=True, text=True, timeout=300, encoding='utf-8'
                 )
-                return result.stdout.strip() if result.returncode == 0 else f"❌ خطأ: {result.stderr}"
+                return result.stdout.strip() if result.returncode == 0 else f"❌ Error: {result.stderr}"
             except subprocess.TimeoutExpired:
-                return "❌ Timeout: استغرق الطلب وقتاً طويلاً"
+                return "❌ Timeout: Request took too long"
             except Exception as e:
-                return f"❌ خطأ: {str(e)}"
+                return f"❌ Error: {str(e)}"
         elif provider == "openai":
             return self.ask_openai(prompt)
         elif provider == "anthropic":
@@ -530,19 +530,19 @@ class ZadaCore:
             return self.ask_groq(prompt)
         elif provider == "together":
             return self.ask_together(prompt)
-        return f"❌ مزود غير معروف: {provider}"
+        return f"❌ Unknown provider: {provider}"
 
     def cmd_agents(self, args: str = "") -> str:
         if args:
             agents = [a for a in self.agents if args.lower() in a["language"].lower() or args.lower() in a["name"].lower()]
             if not agents:
-                return f"❌ لا يوجد وكلاء للغة: {args}"
-            result = f"## 🤖 وكلاء {args.upper()}\n\n"
+                return f"❌ No agents found for language: {args}"
+            result = f"## 🤖 Agents for {args.upper()}\n\n"
             for a in agents[:20]:
                 result += f"- **{a['name']}** ({a['type']})\n  - {a['description'][:80]}...\n\n"
             return result
         
-        result = "## 🤖 جميع الوكلاء\n\n"
+        result = "## 🤖 All Agents\n\n"
         by_lang = {}
         for a in self.agents:
             by_lang.setdefault(a["language"], []).append(a["name"])
@@ -550,16 +550,16 @@ class ZadaCore:
             result += f"### {lang.upper()} ({len(names)})\n"
             result += ", ".join(names[:15])
             if len(names) > 15:
-                result += f" ... و{len(names)-15} آخر"
+                result += f" ... and {len(names)-15} more"
             result += "\n\n"
         return result
     
     def cmd_skills(self, args: str = "") -> str:
         if not self.skills:
-            return "⚠️ لا توجد مهارات. تأكد من تشغيل copy_resources.py"
+            return "⚠️ No skills found. Please run copy_resources.py"
         
         if args == "all":
-            result = f"## 🛠️ جميع المهارات ({len(self.skills)})\n\n"
+            result = f"## 🛠️ All Skills ({len(self.skills)})\n\n"
             by_cat = {}
             for s in self.skills:
                 by_cat.setdefault(s["category"], []).append(s["name"])
@@ -568,7 +568,7 @@ class ZadaCore:
                 for name in names[:20]:
                     result += f"- {name}\n"
                 if len(names) > 20:
-                    result += f"- ... و{len(names)-20} أخرى\n"
+                    result += f"- ... and {len(names)-20} more\n"
                 result += "\n"
             return result
         
@@ -576,54 +576,54 @@ class ZadaCore:
             cats = {}
             for s in self.skills:
                 cats[s["category"]] = cats.get(s["category"], 0) + 1
-            result = "## 🛠️ فئات المهارات\n\n"
+            result = "## 🛠️ Skill Categories\n\n"
             for cat, count in sorted(cats.items(), key=lambda x: x[1], reverse=True):
-                result += f"- **{cat.upper()}**: {count} مهارة\n"
+                result += f"- **{cat.upper()}**: {count} skills\n"
             return result
         
         if args:
             matches = [s for s in self.skills if args.lower() in s["name"].lower() or args.lower() in s["description"].lower()]
             if not matches:
-                return f"❌ لا توجد مهارات مطابقة لـ: {args}"
-            result = f"## 🛠️ نتائج البحث: {args}\n\n"
+                return f"❌ No skills found matching: {args}"
+            result = f"## 🛠️ Search Results: {args}\n\n"
             for s in matches[:15]:
                 result += f"- **{s['name']}** ({s['category']})\n  - {s['description'][:80]}...\n\n"
             return result
         
-        result = "## 🛠️ ملخص المهارات\n\n"
+        result = "## 🛠️ Skill Summary\n\n"
         cats = {}
         for s in self.skills:
             cats[s["category"]] = cats.get(s["category"], 0) + 1
         for cat, count in sorted(cats.items(), key=lambda x: x[1], reverse=True)[:10]:
-            result += f"- **{cat.upper()}**: {count} مهارة\n"
-        result += f"\n📊 **إجمالي المهارات: {len(self.skills)}**\n"
-        result += "\n💡 استخدم:\n"
-        result += "   - `/skills all` - لعرض جميع المهارات\n"
-        result += "   - `/skills categories` - لعرض الفئات\n"
-        result += "   - `/skills <كلمة>` - للبحث\n"
+            result += f"- **{cat.upper()}**: {count} skills\n"
+        result += f"\n📊 **Total Skills: {len(self.skills)}**\n"
+        result += "\n💡 Use:\n"
+        result += "   - `/skills all` - to view all skills\n"
+        result += "   - `/skills categories` - to view categories\n"
+        result += "   - `/skills <word>` - to search\n"
         return result
     
     def cmd_plan(self, args: str) -> str:
         if not args:
-            return "❌ يرجى وصف المهمة"
-        # صياغة أقصر وأسرع
-        return self.ask_ollama(f"خطط لـ: {args}")
+            return "❌ Please describe the task"
+        # Shorter and faster formulation
+        return self.ask_ollama(f"Plan for: {args}")
     
     def cmd_code(self, args: str) -> str:
         if not args:
-            return "❌ يرجى وصف الكود المطلوب"
-        # صياغة أقصر وأسرع
-        return self.ask_ollama(f"اكتب كود لـ: {args}")
+            return "❌ Please describe the code needed"
+        # Shorter and faster formulation
+        return self.ask_ollama(f"Write code for: {args}")
     
     def cmd_test(self, args: str) -> str:
         if not args:
-            return "❌ يرجى وصف المكون"
-        # صياغة أقصر وأسرع
-        return self.ask_ollama(f"اكتب اختبارات لـ: {args}")
+            return "❌ Please describe the component"
+        # Shorter and faster formulation
+        return self.ask_ollama(f"Write tests for: {args}")
     
     def cmd_file(self, args: str) -> str:
         if not args:
-            return "❌ يرجى تحديد مسار الملف"
+            return "❌ Please specify a file path"
         p = Path(args)
         if not p.is_absolute():
             p = self.current_workspace / args
@@ -632,36 +632,36 @@ class ZadaCore:
                 content = p.read_text(encoding='utf-8')
                 return f"## 📄 {p.name}\n\n```\n{content[:2000]}\n```"
             except Exception as e:
-                return f"❌ خطأ: {e}"
-        return f"❌ الملف غير موجود: {args}"
+                return f"❌ Error: {e}"
+        return f"❌ File not found: {args}"
     
     def cmd_shield(self, args: str = "") -> str:
-        """عرض تقرير الأمان"""
+        """Display security report"""
         stats = self.shield.get_stats()
         
         return f"""
 ## 🛡️ AgentShield Report
 
-| المقياس | القيمة |
+| Metric | Value |
 |---------|--------|
-| إجمالي الطلبات | {stats['total_requests']} |
-| الطلبات الممنوعة | {stats['blocked']} |
-| معدل الطلبات/الدقيقة | {self.shield.max_requests_per_minute} |
+| Total Requests | {stats['total_requests']} |
+| Blocked Requests | {stats['blocked']} |
+| Requests/Minute | {self.shield.max_requests_per_minute} |
 
-### الأحداث حسب النوع
+### Events by Type
 {chr(10).join([f"- {k}: {v}" for k, v in stats['by_action'].items()])}
 
-💡 عرض التفاصيل: `/audit` 
+💡 View details: `/audit` 
 """
 
     def cmd_audit(self, args: str = "") -> str:
-        """عرض سجل الأمان"""
+        """Display security log"""
         logs = self.shield.get_audit_log(20)
         
         if not logs:
-            return "📭 لا توجد أحداث أمنية مسجلة"
+            return "📭 No security events logged"
         
-        result = "## 🔒 Audit Log (آخر 20 حدث)\n\n"
+        result = "## 🔒 Audit Log (last 20 events)\n\n"
         for log in reversed(logs):
             level_icon = "🔴" if log.get("level") == "CRITICAL" else "🟡" if log.get("level") == "WARNING" else "🔵"
             result += f"{level_icon} **{log['timestamp']}** - {log['action']}\n"
@@ -672,81 +672,81 @@ class ZadaCore:
         return result
 
     def cmd_learn(self, args: str = "") -> str:
-        return "📊 Continuous Learning: تم تسجيل 0 جلسة حتى الآن"
+        return "📊 Continuous Learning: 0 sessions recorded so far"
     
     def cmd_review(self, args: str) -> str:
         if not args:
-            return "❌ يرجى تحديد ملف للمراجعة"
+            return "❌ Please specify a file for review"
         file_path = Path(args)
         if not file_path.is_absolute():
             file_path = self.current_workspace / args
         if file_path.exists() and file_path.is_file():
             content = file_path.read_text(encoding='utf-8')[:3000]
-            return self.ask_ollama(f"قم بمراجعة هذا الكود بدقة:\n\n{content}")
-        return f"❌ الملف غير موجود: {args}"
+            return self.ask_ollama(f"Please review this code carefully:\n\n{content}")
+        return f"❌ File not found: {args}"
 
     def cmd_fix(self, args: str) -> str:
         if not args:
-            return "❌ يرجى تحديد ملف للإصلاح"
+            return "❌ Please specify a file to fix"
         file_path = Path(args)
         if not file_path.is_absolute():
             file_path = self.current_workspace / args
         if file_path.exists() and file_path.is_file():
             content = file_path.read_text(encoding='utf-8')[:3000]
-            return self.ask_ollama(f"قم بتحليل وإصلاح المشاكل في هذا الكود:\n\n{content}")
-        return f"❌ الملف غير موجود: {args}"
+            return self.ask_ollama(f"Please analyze and fix issues in this code:\n\n{content}")
+        return f"❌ File not found: {args}"
 
     def cmd_build(self, args: str) -> str:
         if not args:
-            return "❌ يرجى وصف مشكلة البناء"
-        return self.ask_ollama(f"قم بتحليل مشكلة البناء التالية واقتراح حلاً:\n\n{args}")
+            return "❌ Please describe the build issue"
+        return self.ask_ollama(f"Please analyze the build issue and suggest a solution:\n\n{args}")
 
     def cmd_provider(self, args: str) -> str:
-        """تغيير مزود الخدمة"""
+        """Change the provider"""
         if not args:
-            return f"🔌 المزود الحالي: {self.current_provider}\n\nاستخدم `/provider <name>` لتغيير المزود\nالأسماء المتاحة: local, openai, anthropic, gemini, groq, together"
+            return f"🔌 Current provider: {self.current_provider}\n\nUse `/provider <name>` to change the provider\nAvailable names: local, openai, anthropic, gemini, groq, together"
         providers = [p["name"] for p in self.get_available_providers()]
         if args in providers:
             self.current_provider = args
-            return f"✅ تم تغيير المزود إلى: {args}"
-        return f"❌ المزود '{args}' غير متاح.\n\nالمزودين المتاحين:\n" + "\n".join(f"  • {p}" for p in providers)
+            return f"✅ Provider changed to: {args}"
+        return f"❌ Provider '{args}' not available.\n\nAvailable providers:\n" + "\n".join(f"  • {p}" for p in providers)
 
     def cmd_providers(self) -> str:
-        """عرض جميع المزودين المتاحين"""
+        """Display all available providers"""
         providers = self.get_available_providers()
-        result = "## 🔌 مزودي الخدمة المتاحين\n\n"
+        result = "## 🔌 Available Providers\n\n"
         for p in providers:
-            current = " ✅ (الحالي)" if p["name"] == self.current_provider else ""
+            current = " ✅ (Current)" if p["name"] == self.current_provider else ""
             result += f"- **{p['display']}**{current}\n"
-            result += f"  - النموذج: `{p['model']}`\n\n"
+            result += f"  - Model: `{p['model']}`\n\n"
         return result
 
     def cmd_help(self) -> str:
         return """
-## 🏔️ ZADA v1.0 - الأوامر المتاحة
+## 🏔️ ZADA v1.0 - Multi-Provider AI Coding Assistant
 
-| الأمر | الوصف | مثال |
+| Command | Description | Example |
 |-------|-------|------|
-| `/agents` | عرض جميع الوكلاء | `/agents` |
-| `/agents <lang>` | وكلاء بلغة محددة | `/agents python` |
-| `/skills` | ملخص المهارات | `/skills` |
-| `/skills all` | عرض جميع المهارات | `/skills all` |
-| `/skills categories` | عرض الفئات | `/skills categories` |
-| `/skills <word>` | بحث | `/skills security` |
-| `/plan <desc>` | خطة تطوير | `/plan موقع ويب` |
-| `/code <desc>` | كتابة كود | `/code دالة جمع` |
-| `/test <desc>` | كتابة اختبارات | `/test دالة جمع` |
-| `/file <path>` | قراءة ملف | `/file zada.py` |
-| `/shield` | فحص أمني | `/shield` |
-| `/audit` | سجل الأمان | `/audit` |
-| `/learn` | التعلم المستمر | `/learn` |
-| `/review <path>` | مراجعة كود | `/review file.py` |
-| `/fix <path>` | إصلاح كود | `/fix file.py` |
-| `/build <desc>` | حل مشكلة بناء | `/build مشكلة بناء` |
-| `/provider [name]` | عرض/تغيير مزود الخدمة | `/provider groq` |
-| `/providers` | عرض جميع المزودين | `/providers` |
-| `/help` | المساعدة | `/help` |
-| `/quit` | الخروج | `/quit` |
+| `/agents` | Display all agents | `/agents` |
+| `/agents <lang>` | Agents for a specific language | `/agents python` |
+| `/skills` | Skill summary | `/skills` |
+| `/skills all` | Display all skills | `/skills all` |
+| `/skills categories` | Display skill categories | `/skills categories` |
+| `/skills <word>` | Search skills | `/skills security` |
+| `/plan <desc>` | Plan for a task | `/plan website` |
+| `/code <desc>` | Write code for a task | `/code sum function` |
+| `/test <desc>` | Write tests for a component | `/test sum function` |
+| `/file <path>` | Read a file | `/file zada.py` |
+| `/shield` | Display security report | `/shield` |
+| `/audit` | Display security log | `/audit` |
+| `/learn` | Continuous learning | `/learn` |
+| `/review <path>` | Review a file | `/review file.py` |
+| `/fix <path>` | Fix a file | `/fix file.py` |
+| `/build <desc>` | Solve a build issue | `/build build error` |
+| `/provider [name]` | Display/change provider | `/provider groq` |
+| `/providers` | Display all providers | `/providers` |
+| `/help` | Help | `/help` |
+| `/quit` | Quit | `/quit` |
 """
     
     def handle_command(self, cmd: str, args: str) -> str:
@@ -781,7 +781,7 @@ class ZadaCore:
         elif cmd == "help":
             return self.cmd_help()
         else:
-            return f"❌ أمر غير معروف: {cmd}\n{self.cmd_help()}"
+            return f"❌ Unknown command: {cmd}\n{self.cmd_help()}"
     
     def run(self):
         console.print(Panel.fit(
@@ -790,15 +790,15 @@ class ZadaCore:
             border_style="cyan"
         ))
         console.print(f"\n[green]✅ ZADA ready! {len(self.agents)} agents, {len(self.skills)} skills[/green]\n")
-        console.print("[dim]💡 استخدم /help لعرض الأوامر[/dim]\n")
+        console.print("[dim]💡 Type /help to see all commands[/dim]\n")
         
         while True:
             try:
                 user = console.input("[bold cyan]🏔️ ZADA>[/bold cyan] ").strip()
                 if not user:
                     continue
-                if user.lower() in ["/quit", "exit"]:
-                    console.print("[yellow]👋 Goodbye![/yellow]")
+                if user.lower() in ["/quit", "exit", "quit"]:
+                    console.print("[yellow]👋 Goodbye! ZADA is waiting for your return.[/yellow]")
                     break
                 if user.startswith("/"):
                     parts = user.split(maxsplit=1)
