@@ -11,7 +11,14 @@ Where Code Grows
 ![Status](https://img.shields.io/badge/status-Production_Ready-green)
 ![Version](https://img.shields.io/badge/version-1.1-blue)
 
-🌐 **Website:** [zada.pages.dev](https://zada.pages.dev)
+🌐 **Website:** [zada-8xz.pages.dev](https://zada-8xz.pages.dev)
+
+![GitHub last commit](https://img.shields.io/github/last-commit/medissaoui711/zada)
+![GitHub repo size](https://img.shields.io/github/repo-size/medissaoui711/zada)
+![GitHub stars](https://img.shields.io/github/stars/medissaoui711/zada?style=social)
+![GitHub forks](https://img.shields.io/github/forks/medissaoui711/zada?style=social)
+![GitHub issues](https://img.shields.io/github/issues/medissaoui711/zada)
+![GitHub license](https://img.shields.io/github/license/medissaoui711/zada)
 
 ## منصة برمجية ذكية متعددة المصادر - تجمع بين النماذج المحلية والسحابية
 
