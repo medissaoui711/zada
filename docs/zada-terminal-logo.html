@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0e27;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Courier New', 'Fira Code', monospace;
+        }
+
+        .terminal {
+            background: #0d1117;
+            border-radius: 10px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            width: 800px;
+            overflow: hidden;
+        }
+
+        .terminal-header {
+            background: #1a1a2e;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .window-btn {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .close { background: #ff5f56; }
+        .minimize { background: #ffbd2e; }
+        .maximize { background: #27c93f; }
+
+        .terminal-title {
+            color: #888;
+            font-size: 12px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .terminal-body {
+            padding: 20px;
+        }
+
+        .ascii-art {
+            color: #00b4d8;
+            font-size: 10px;
+            line-height: 1.2;
+            margin-bottom: 20px;
+            white-space: pre;
+            font-family: monospace;
+        }
+
+        .code-window {
+            background: #0a0e27;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+        }
+
+        .prompt {
+            color: #00ff00;
+        }
+
+        .command {
+            color: #fff;
+        }
+
+        .output {
+            color: #89e051;
+            margin-left: 16px;
+        }
+
+        .tagline {
+            text-align: center;
+            color: #00a896;
+            font-size: 14px;
+            margin-top: 16px;
+            letter-spacing: 2px;
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 8px;
+            height: 14px;
+            background: #00ff00;
+            animation: blink 1s infinite;
+            vertical-align: middle;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #0077b6, #00b4d8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body>
+    <div class="terminal">
+        <div class="terminal-header">
+            <div class="window-btn close"></div>
+            <div class="window-btn minimize"></div>
+            <div class="window-btn maximize"></div>
+            <div class="terminal-title">ZADA@terminal:~/zada</div>
+        </div>
+        <div class="terminal-body">
+            <div class="ascii-art">
+  ███████╗ █████╗ ██████╗  █████╗     ███████╗ █████╗ ██████╗  █████╗  
+  ╚══███╔╝██╔══██╗██╔══██╗██╔══██╗    ╚══███╔╝██╔══██╗██╔══██╗██╔══██╗ 
+    ███╔╝ ███████║██║  ██║███████║      ███╔╝ ███████║██║  ██║███████║ 
+   ███╔╝  ██╔══██║██║  ██║██╔══██║     ███╔╝  ██╔══██║██║  ██║██╔══██║ 
+  ███████╗██║  ██║██████╔╝██║  ██║    ███████╗██║  ██║██████╔╝██║  ██║ 
+  ╚══════╝╚═╝  ╚═╝╚═════╝ ╚═╝  ╚═╝    ╚══════╝╚═╝  ╚═╝╚═════╝ ╚═╝  ╚═╝ 
+            </div>
+
+            <div class="code-window">
+                <div><span class="prompt">$</span> <span class="command">python zada.py</span></div>
+                <div class="output">✅ ZADA v1.0 initialized</div>
+                <div class="output">📊 Agents: 47 | Skills: 19 | Rules: 12</div>
+                <div class="output">🏔️ ZADA ready! Type /help to see all commands</div>
+                <div style="margin-top: 12px;">
+                    <span class="prompt">🏔️ ZADA&gt;</span> <span class="command">/code "function to calculate fibonacci"</span>
+                </div>
+                <div class="output">def fibonacci(n):</div>
+                <div class="output" style="margin-left: 16px;">if n &lt;= 1: return n</div>
+                <div class="output" style="margin-left: 16px;">return fibonacci(n-1) + fibonacci(n-2)</div>
+                <div><span class="prompt">🏔️ ZADA&gt;</span> <span class="cursor"></span></div>
+            </div>
+
+            <div class="tagline">
+                Where Code Grows
+            </div>
+        </div>
+    </div>
+</body>
+</html>

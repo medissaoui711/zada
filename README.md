@@ -1,3 +1,7 @@
+<div align="center">
+  <img src="docs/zada-logo.svg" alt="ZADA Logo" width="100%"/>
+</div>
+
 # 🏔️ ZADA - Multi-Provider AI Coding Assistant
 
 Where Code Grows

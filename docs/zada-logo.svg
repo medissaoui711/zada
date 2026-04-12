@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" width="800" height="400">
+    <defs>
+        <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" style="stop-color:#0077b6;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#00b4d8;stop-opacity:1" />
+        </linearGradient>
+        <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" style="stop-color:#00a896;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#02c39a;stop-opacity:1" />
+        </linearGradient>
+    </defs>
+
+    <!-- الخلفية -->
+    <rect width="800" height="400" rx="10" fill="#0a0e27" stroke="#0077b6" stroke-width="2"/>
+
+    <!-- شريط العنوان -->
+    <rect x="0" y="0" width="800" height="30" fill="#1a1a2e" rx="5"/>
+    <circle cx="15" cy="15" r="6" fill="#ff5f56"/>
+    <circle cx="35" cy="15" r="6" fill="#ffbd2e"/>
+    <circle cx="55" cy="15" r="6" fill="#27c93f"/>
+    <text x="400" y="20" fill="#888" font-family="monospace" font-size="12" text-anchor="middle">ZADA@terminal:~/zada</text>
+
+    <!-- الشعار المربع (ASCII Art) -->
+    <text x="20" y="80" fill="url(#grad)" font-family="monospace" font-size="14" font-weight="bold">
+        <tspan x="20" dy="0">  ███████╗ █████╗ ██████╗  █████╗     ███████╗ █████╗ ██████╗  █████╗  </tspan>
+        <tspan x="20" dy="20">  ╚══███╔╝██╔══██╗██╔══██╗██╔══██╗    ╚══███╔╝██╔══██╗██╔══██╗██╔══██╗ </tspan>
+        <tspan x="20" dy="20">    ███╔╝ ███████║██║  ██║███████║      ███╔╝ ███████║██║  ██║███████║ </tspan>
+        <tspan x="20" dy="20">   ███╔╝  ██╔══██║██║  ██║██╔══██║     ███╔╝  ██╔══██║██║  ██║██╔══██║ </tspan>
+        <tspan x="20" dy="20">  ███████╗██║  ██║██████╔╝██║  ██║    ███████╗██║  ██║██████╔╝██║  ██║ </tspan>
+        <tspan x="20" dy="20">  ╚══════╝╚═╝  ╚═╝╚═════╝ ╚═╝  ╚═╝    ╚══════╝╚═╝  ╚═╝╚═════╝ ╚═╝  ╚═╝ </tspan>
+    </text>
+
+    <!-- نافذة Terminal -->
+    <rect x="50" y="200" width="700" height="150" rx="5" fill="#0d1117" stroke="#30363d" stroke-width="1"/>
+
+    <!-- سطر الأوامر -->
+    <text x="65" y="225" fill="#00ff00" font-family="monospace" font-size="12">$</text>
+    <text x="80" y="225" fill="#fff" font-family="monospace" font-size="12">python zada.py</text>
+
+    <!-- المخرجات -->
+    <text x="65" y="245" fill="#89e051" font-family="monospace" font-size="11">✅ ZADA v1.0 initialized</text>
+    <text x="65" y="260" fill="#58a6ff" font-family="monospace" font-size="11">📊 Agents: 47 | Skills: 19 | Rules: 12</text>
+    <text x="65" y="275" fill="#f0883e" font-family="monospace" font-size="11">🏔️ ZADA ready! Type /help to see all commands</text>
+
+    <!-- سطر فارغ -->
+    <text x="65" y="295" fill="#fff" font-family="monospace" font-size="11">🏔️ ZADA&gt;</text>
+    <text x="150" y="295" fill="#f0883e" font-family="monospace" font-size="11">/code "function to calculate fibonacci"</text>
+
+    <!-- كود المخرجات -->
+    <text x="65" y="320" fill="#89e051" font-family="monospace" font-size="11">def fibonacci(n):</text>
+    <text x="80" y="335" fill="#89e051" font-family="monospace" font-size="11">if n &lt;= 1: return n</text>
+    <text x="80" y="350" fill="#89e051" font-family="monospace" font-size="11">return fibonacci(n-1) + fibonacci(n-2)</text>
+
+    <!-- الشعار السفلي -->
+    <text x="400" y="385" fill="url(#grad2)" font-family="monospace" font-size="14" text-anchor="middle" font-weight="bold">
+        Where Code Grows
+    </text>
+</svg>
