@@ -1,12 +1,13 @@
 @echo off
-title Apex - القمة في البرمجة المساعدة
+title ZADA - AI Programming Assistant
 color 0A
 echo ========================================
-echo    🏔️ Apex - AI Programming Assistant
+echo    🏔️ ZADA v1.0 - AI Programming Assistant
+echo    Where Code Grows
 echo ========================================
 echo.
 
-cd /d "%USERPROFILE%\Projects\ecl-apex"
+cd /d "%USERPROFILE%\Projects\zada"
 
 if not exist ".venv\" (
     echo Creating virtual environment...
@@ -17,6 +18,6 @@ if not exist ".venv\" (
 )
 
 call .venv\Scripts\activate
-python apex.py
+python zada.py
 
 pause

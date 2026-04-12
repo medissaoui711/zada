@@ -1,4 +1,6 @@
-# 🏔️ APEX - Multi-Provider AI Coding Assistant
+# 🏔️ ZADA - Multi-Provider AI Coding Assistant
+
+Where Code Grows
 
 ![Python Version](https://img.shields.io/badge/python-3.9+-blue?logo=python&logoColor=white)
 ![License](https://img.shields.io/badge/license-Commercial-red?logo=law)
@@ -9,19 +11,19 @@
 ![Status](https://img.shields.io/badge/status-Production_Ready-green)
 ![Version](https://img.shields.io/badge/version-1.1-blue)
 
-🌐 **Website:** [apex-core.pages.dev](https://apex-core.pages.dev)
+🌐 **Website:** [zada.pages.dev](https://zada.pages.dev)
 
 ## منصة برمجية ذكية متعددة المصادر - تجمع بين النماذج المحلية والسحابية
 
-[Report Bug](https://github.com/medissaoui711/apex-core/issues) ·
-[Request Feature](https://github.com/medissaoui711/apex-core/issues) ·
+[Report Bug](https://github.com/medissaoui711/zada/issues) ·
+[Request Feature](https://github.com/medissaoui711/zada/issues) ·
 [Contact](https://github.com/medissaoui711)
 
 ---
 
 ## 🎯 Overview
 
-**APEX** is a production-ready AI programming assistant that integrates:
+**ZADA** is a production-ready AI programming assistant that integrates:
 
 | Component | Description |
 | --------- | ----------- |
@@ -35,7 +37,7 @@ Built for developers who want **flexibility**, **privacy**, and **power** in the
 
 ---
 
-## 💪 Why APEX?
+## 💪 Why ZADA?
 
 | Strength | Description |
 | -------- | ----------- |
@@ -92,8 +94,8 @@ ollama pull qwen2.5-coder
 
 ```bash
 # Clone the repository
-git clone https://github.com/medissaoui711/apex-core.git
-cd apex-core
+git clone https://github.com/medissaoui711/zada.git
+cd zada
 
 # Create virtual environment
 python -m venv .venv
@@ -110,13 +112,13 @@ pip install -r requirements.txt
 # Build the resource database (one time only)
 python copy_resources.py
 
-# Run APEX
-python apex.py
+# Run ZADA
+python zada.py
 ```
 
 ### First Run
 
-When you first run APEX, you'll be prompted to select a provider:
+When you first run ZADA, you'll be prompted to select a provider:
 
 ```bash
 🔌 جاري فحص مزودي الخدمة...
@@ -199,7 +201,7 @@ export OPENAI_API_KEY="sk-..."
 
 ```text
 ┌─────────────────────────────────────────────────────────────┐
-│                      APEX CLI (Rich UI)                     │
+│                      ZADA CLI (Rich UI)                     │
 ├─────────────────────────────────────────────────────────────┤
 │                    Command Parser & Router                  │
 ├───────────────┬───────────────┬─────────────────────────────┤
@@ -207,7 +209,7 @@ export OPENAI_API_KEY="sk-..."
 │   /review     │   /fix        │   /build /file /shield      │
 │   /provider   │   /providers  │   /learn /help /quit        │
 ├───────────────┴───────────────┴─────────────────────────────┤
-│                    APEXCore (Orchestrator)                  │
+│                    ZadaCore (Orchestrator)                  │
 ├───────────────┬───────────────┬─────────────────────────────┤
 │  load_agents  │  load_skills  │  load_rules  │  SQLite      │
 ├───────────────┴───────────────┴───────────────┴─────────────┤
@@ -221,18 +223,18 @@ export OPENAI_API_KEY="sk-..."
 ## 📁 Project Structure
 
 ```text
-apex-core/
-├── apex.py                 # Main application (601 lines)
-├── copy_resources.py       # Resource extractor (538 lines)
+zada/
+├── zada.py                 # Main application
+├── copy_resources.py       # Resource extractor
 ├── requirements.txt        # Python dependencies
-├── run_apex.bat           # Windows launcher
+├── run_zada.bat           # Windows launcher
 ├── README.md              # Documentation
 ├── LICENSE                # License file
 ├── .gitignore             # Git ignore rules
 └── .venv/                 # Virtual environment
 
-~/.apex/                   # User data directory
-├── apex.db                # SQLite database
+~/.zada/                   # User data directory
+├── zada.db                # SQLite database
 ├── agents/                # 47 specialized agents
 ├── skills/                # 59 categorized skills
 ├── rules/                 # 12 coding rules
@@ -280,5 +282,5 @@ For licensing inquiries: [GitHub Profile](https://github.com/medissaoui711)
 ---
 
 Built with 🏔️ by [medissaoui711](https://github.com/medissaoui711) ·
-[Report Bug](https://github.com/medissaoui711/apex-core/issues) ·
-[Request Feature](https://github.com/medissaoui711/apex-core/issues)
+[Report Bug](https://github.com/medissaoui711/zada/issues) ·
+[Request Feature](https://github.com/medissaoui711/zada/issues)

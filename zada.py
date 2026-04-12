@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-🏔️ Apex v1.0 - AI Programming Assistant
+🏔️ ZADA v1.0 - Multi-Provider AI Coding Assistant
+Where Code Grows
 """
 
 import os
@@ -17,8 +18,8 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 
 console = Console()
 
-APEX_HOME = Path.home() / ".apex"
-DB_PATH = APEX_HOME / "apex.db"
+ZADA_HOME = Path.home() / ".zada"
+DB_PATH = ZADA_HOME / "zada.db"
 OLLAMA_MODEL = "qwen2.5-coder"
 
 # ========== إعدادات Cloud APIs ==========
@@ -42,8 +43,8 @@ GROQ_MODEL = "llama3-70b-8192"
 TOGETHER_API_KEY = os.environ.get("TOGETHER_API_KEY", "")
 TOGETHER_MODEL = "meta-llama/Llama-3-70b-chat-hf"
 
-class ApexCore:
-    apex_home: Path
+class ZadaCore:
+    zada_home: Path
     db_path: Path
     current_workspace: Path
     conversation_history: list[dict[str, Any]]
@@ -53,7 +54,7 @@ class ApexCore:
     rules: list[dict[str, Any]]
 
     def __init__(self) -> None:
-        self.apex_home = APEX_HOME
+        self.zada_home = ZADA_HOME
         self.db_path = DB_PATH
         self.current_workspace = Path.cwd()
         self.conversation_history: list[dict[str, Any]] = []
@@ -68,7 +69,7 @@ class ApexCore:
         self.skills = self.load_skills()
         self.rules = self.load_rules()
         
-        console.print(f"[green]✅ Apex initialized with provider: {self.current_provider}[/green]")
+        console.print(f"[green]✅ ZADA initialized with provider: {self.current_provider}[/green]")
         console.print(f"[dim]📊 Agents: {len(self.agents)} | Skills: {len(self.skills)} | Rules: {len(self.rules)}[/dim]")
     
     def load_agents(self) -> list[dict[str, Any]]:
@@ -96,7 +97,7 @@ class ApexCore:
     def load_skills(self) -> list[dict[str, Any]]:
         """تحميل جميع المهارات من مجلد skills مباشرة"""
         skills: list[dict[str, Any]] = []
-        skills_dir = self.apex_home / "skills"
+        skills_dir = self.zada_home / "skills"
 
         if skills_dir.exists():
             for category_dir in skills_dir.glob("*"):
@@ -502,7 +503,7 @@ class ApexCore:
 
     def cmd_help(self) -> str:
         return """
-## 🏔️ Apex v1.0 - الأوامر المتاحة
+## 🏔️ ZADA v1.0 - الأوامر المتاحة
 
 | الأمر | الوصف | مثال |
 |-------|-------|------|
@@ -515,7 +516,7 @@ class ApexCore:
 | `/plan <desc>` | خطة تطوير | `/plan موقع ويب` |
 | `/code <desc>` | كتابة كود | `/code دالة جمع` |
 | `/test <desc>` | كتابة اختبارات | `/test دالة جمع` |
-| `/file <path>` | قراءة ملف | `/file apex.py` |
+| `/file <path>` | قراءة ملف | `/file zada.py` |
 | `/shield` | فحص أمني | `/shield` |
 | `/learn` | التعلم المستمر | `/learn` |
 | `/review <path>` | مراجعة كود | `/review file.py` |
@@ -561,16 +562,16 @@ class ApexCore:
     
     def run(self):
         console.print(Panel.fit(
-            "[bold cyan]🏔️ Apex v1.0 - AI Programming Assistant[/bold cyan]\n"
+            "[bold cyan]🏔️ ZADA v1.0 - Multi-Provider AI Coding Assistant[/bold cyan]\n"
             f"[yellow]📁 Workspace: {self.current_workspace}[/yellow]",
             border_style="cyan"
         ))
-        console.print(f"\n[green]✅ Apex ready! {len(self.agents)} agents, {len(self.skills)} skills[/green]\n")
+        console.print(f"\n[green]✅ ZADA ready! {len(self.agents)} agents, {len(self.skills)} skills[/green]\n")
         console.print("[dim]💡 استخدم /help لعرض الأوامر[/dim]\n")
         
         while True:
             try:
-                user = console.input("[bold cyan]🏔️ Apex>[/bold cyan] ").strip()
+                user = console.input("[bold cyan]🏔️ ZADA>[/bold cyan] ").strip()
                 if not user:
                     continue
                 if user.lower() in ["/quit", "exit"]:
@@ -606,5 +607,5 @@ if __name__ == "__main__":
         console.print("[green]✅ Ollama connected[/green]")
     except:
         console.print("[yellow]⚠️ Ollama not found[/yellow]")
-    apex = ApexCore()
-    apex.run()
+    zada = ZadaCore()
+    zada.run()
