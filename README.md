@@ -13,12 +13,34 @@ Where Code Grows
 
 🌐 **Website:** [zada-8xz.pages.dev](https://zada-8xz.pages.dev)
 
+![Hugging Face Space](https://img.shields.io/badge/🤗-Hugging%20Face%20Space-yellow?logo=huggingface)
+![Hugging Face Live](https://img.shields.io/badge/demo-online-brightgreen?logo=huggingface)
+[![Open in HF](https://img.shields.io/badge/🚀-Try%20Live%20Demo-orange)](https://huggingface.co/spaces/medissaoui7/zada)
+
 ![GitHub last commit](https://img.shields.io/github/last-commit/medissaoui711/zada)
 ![GitHub repo size](https://img.shields.io/github/repo-size/medissaoui711/zada)
 ![GitHub stars](https://img.shields.io/github/stars/medissaoui711/zada?style=social)
 ![GitHub forks](https://img.shields.io/github/forks/medissaoui711/zada?style=social)
 ![GitHub issues](https://img.shields.io/github/issues/medissaoui711/zada)
 ![GitHub license](https://img.shields.io/github/license/medissaoui711/zada)
+
+## 🚀 Try ZADA Live
+
+[![Open in Hugging Face](https://img.shields.io/badge/🤗-Open%20in%20Hugging%20Face%20Spaces-blue?style=for-the-badge&logo=huggingface)](https://huggingface.co/spaces/medissaoui7/zada)
+
+**👉 [huggingface.co/spaces/medissaoui7/zada](https://huggingface.co/spaces/medissaoui7/zada)**
+
+---
+
+## 🔗 Links
+
+| Platform | Link |
+|----------|------|
+| 🤗 **Hugging Face Space** | [medissaoui7/zada](https://huggingface.co/spaces/medissaoui7/zada) |
+| 💻 **GitHub Repository** | [medissaoui711/zada](https://github.com/medissaoui711/zada) |
+| 🌐 **Website** | [zada-8xz.pages.dev](https://zada-8xz.pages.dev) |
+
+---
 
 ## منصة برمجية ذكية متعددة المصادر - تجمع بين النماذج المحلية والسحابية
 
