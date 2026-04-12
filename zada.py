@@ -43,6 +43,175 @@ GROQ_MODEL = "llama3-70b-8192"
 TOGETHER_API_KEY = os.environ.get("TOGETHER_API_KEY", "")
 TOGETHER_MODEL = "meta-llama/Llama-3-70b-chat-hf"
 
+# ========== AgentShield - Security Layer ==========
+import re
+import time
+from datetime import datetime
+from typing import Tuple, List, Dict, Any
+
+class AgentShield:
+    """طبقة أمان متكاملة لحماية Zada من الأوامر الخطرة"""
+    
+    # قائمة الأوامر المسموح بها فقط (Whitelist)
+    ALLOWED_COMMANDS = {
+        'ls', 'dir', 'cat', 'type', 'echo', 'python', 'pip',
+        'git', 'ollama', 'code', 'notepad', 'zada', 'apex'
+    }
+    
+    # الملفات والمسارات الممنوعة
+    FORBIDDEN_PATHS = {
+        '/etc/passwd', '/etc/shadow', '/etc/hosts',
+        '~/.ssh', '~/.aws', '~/.config',
+        'C:\\Windows\\System32', 'C:\\Windows\\System',
+        '/System', '/boot', '/dev', '/proc'
+    }
+    
+    # الأنماط الممنوعة في الـ prompt
+    FORBIDDEN_PATTERNS = {
+        'rm -rf', 'del /f', 'format', 'mkfs',
+        'drop database', 'truncate table',
+        'sudo', 'su -', 'chmod 777', 'chown',
+        '> /dev/null', '2> /dev/null', '&> /dev/null',
+        'wget', 'curl.*|', 'bash -c', 'sh -c'
+    }
+    
+    # الأوامر التي تتطلب تأكيداً إضافياً
+    DANGEROUS_COMMANDS = {
+        'rm', 'del', 'rd', 'rmdir', 'move', 'rename',
+        'shutdown', 'reboot', 'kill', 'taskkill'
+    }
+    
+    def __init__(self):
+        self.request_count = 0
+        self.max_requests_per_minute = 30
+        self.last_minute = 0
+        self.audit_log = Path.home() / ".zada" / "audit.log"
+        self.audit_log.parent.mkdir(parents=True, exist_ok=True)
+    
+    def validate_command(self, command: str) -> Tuple[bool, str]:
+        """التحقق من صحة الأمر"""
+        if not command or not command.strip():
+            return False, "Empty command"
+        
+        cmd_parts = command.strip().lower().split()
+        base_cmd = cmd_parts[0]
+        
+        # فحص الأوامر المسموح بها
+        if base_cmd not in self.ALLOWED_COMMANDS:
+            return False, f"Command '{base_cmd}' is not allowed"
+        
+        # فحص الأوامر الخطيرة (تتطلب تأكيداً)
+        if base_cmd in self.DANGEROUS_COMMANDS:
+            return True, f"DANGEROUS: Command '{base_cmd}' requires confirmation"
+        
+        return True, "OK"
+    
+    def validate_path(self, path: str) -> Tuple[bool, str]:
+        """التحقق من صحة المسار"""
+        try:
+            resolved = str(Path(path).resolve()).lower()
+            
+            for forbidden in self.FORBIDDEN_PATHS:
+                if forbidden.lower() in resolved:
+                    return False, f"Access to '{forbidden}' is forbidden"
+            
+            return True, "OK"
+        except Exception as e:
+            return False, f"Invalid path: {str(e)}"
+    
+    def validate_prompt(self, prompt: str) -> Tuple[bool, str]:
+        """التحقق من صحة الـ prompt (منع الحقن)"""
+        if not prompt:
+            return True, "OK"
+        
+        prompt_lower = prompt.lower()
+        
+        # فحص الأنماط الممنوعة
+        for pattern in self.FORBIDDEN_PATTERNS:
+            if re.search(re.escape(pattern), prompt_lower):
+                return False, f"Pattern '{pattern}' is forbidden"
+        
+        # فحص طول الـ prompt
+        if len(prompt) > 10000:
+            return False, "Prompt too long (max 10000 characters)"
+        
+        return True, "OK"
+    
+    def check_rate_limit(self) -> Tuple[bool, str]:
+        """التحقق من معدل الطلبات"""
+        current_minute = int(time.time() / 60)
+        
+        if current_minute != self.last_minute:
+            self.last_minute = current_minute
+            self.request_count = 0
+        
+        self.request_count += 1
+        
+        if self.request_count > self.max_requests_per_minute:
+            return False, f"Rate limit exceeded ({self.max_requests_per_minute} requests/minute)"
+        
+        return True, "OK"
+    
+    def audit(self, action: str, details: Dict[str, Any], level: str = "INFO"):
+        """تسجيل الأحداث الأمنية"""
+        audit_entry = {
+            "timestamp": datetime.now().isoformat(),
+            "level": level,
+            "action": action,
+            "details": details
+        }
+        
+        try:
+            with open(self.audit_log, "a", encoding='utf-8') as f:
+                f.write(f"{audit_entry}\n")
+        except Exception:
+            pass
+        
+        # عرض تحذير للمستخدم
+        if level == "WARNING":
+            from rich.console import Console
+            console = Console()
+            console.print(f"[yellow]⚠️ Security: {action} - {details.get('reason', '')}[/yellow]")
+        elif level == "CRITICAL":
+            from rich.console import Console
+            console = Console()
+            console.print(f"[red]🔒 CRITICAL: {action} - {details.get('reason', '')}[/red]")
+    
+    def get_audit_log(self, limit: int = 20) -> List[Dict]:
+        """استرجاع سجل الأمان"""
+        logs = []
+        if not self.audit_log.exists():
+            return logs
+        
+        try:
+            with open(self.audit_log, "r", encoding='utf-8') as f:
+                for line in f:
+                    try:
+                        logs.append(eval(line))
+                    except:
+                        pass
+        except Exception:
+            pass
+        
+        return logs[-limit:]
+    
+    def get_stats(self) -> Dict:
+        """إحصائيات الأمان"""
+        logs = self.get_audit_log(1000)
+        
+        stats = {
+            "total_requests": len(logs),
+            "blocked": len([l for l in logs if l.get("level") in ["WARNING", "CRITICAL"]]),
+            "by_action": {}
+        }
+        
+        for log in logs:
+            action = log.get("action", "unknown")
+            stats["by_action"][action] = stats["by_action"].get(action, 0) + 1
+        
+        return stats
+
+
 class ZadaCore:
     zada_home: Path
     db_path: Path
@@ -69,7 +238,10 @@ class ZadaCore:
         self.skills = self.load_skills()
         self.rules = self.load_rules()
         
-        console.print(f"[green]✅ ZADA initialized with provider: {self.current_provider}[/green]")
+        # إضافة AgentShield
+        self.shield = AgentShield()
+        
+        console.print(f"[green]✅ ZADA initialized with AgentShield[/green]")
         console.print(f"[dim]📊 Agents: {len(self.agents)} | Skills: {len(self.skills)} | Rules: {len(self.rules)}[/dim]")
     
     def load_agents(self) -> list[dict[str, Any]]:
@@ -318,9 +490,24 @@ class ZadaCore:
                 return "local"
 
     def ask_llm(self, prompt: str, provider: str = None) -> str:
-        """إرسال طلب إلى LLM حسب المزود المختار"""
-        if provider is None:
-            provider = getattr(self, 'current_provider', 'local')
+        """إرسال طلب مع فحص أمني"""
+        
+        # 1. فحص الـ prompt
+        valid, msg = self.shield.validate_prompt(prompt)
+        if not valid:
+            self.shield.audit("BLOCKED_PROMPT", {"prompt": prompt[:100], "reason": msg}, "WARNING")
+            return f"🔒 Security: {msg}"
+        
+        # 2. فحص معدل الطلبات
+        valid, msg = self.shield.check_rate_limit()
+        if not valid:
+            return f"🔒 Security: {msg}"
+        
+        # 3. تسجيل الطلب
+        provider = provider or getattr(self, 'current_provider', 'local')
+        self.shield.audit("LLM_REQUEST", {"provider": provider, "prompt_len": len(prompt)})
+        
+        # 4. تنفيذ الطلب الأصلي
         if provider == "local":
             try:
                 console.print("[dim]⏳ جاري الاتصال بـ Ollama...[/dim]")
@@ -449,8 +636,41 @@ class ZadaCore:
         return f"❌ الملف غير موجود: {args}"
     
     def cmd_shield(self, args: str = "") -> str:
-        return "✅ AgentShield: لم يتم العثور على ثغرات أمنية"
-    
+        """عرض تقرير الأمان"""
+        stats = self.shield.get_stats()
+        
+        return f"""
+## 🛡️ AgentShield Report
+
+| المقياس | القيمة |
+|---------|--------|
+| إجمالي الطلبات | {stats['total_requests']} |
+| الطلبات الممنوعة | {stats['blocked']} |
+| معدل الطلبات/الدقيقة | {self.shield.max_requests_per_minute} |
+
+### الأحداث حسب النوع
+{chr(10).join([f"- {k}: {v}" for k, v in stats['by_action'].items()])}
+
+💡 عرض التفاصيل: `/audit` 
+"""
+
+    def cmd_audit(self, args: str = "") -> str:
+        """عرض سجل الأمان"""
+        logs = self.shield.get_audit_log(20)
+        
+        if not logs:
+            return "📭 لا توجد أحداث أمنية مسجلة"
+        
+        result = "## 🔒 Audit Log (آخر 20 حدث)\n\n"
+        for log in reversed(logs):
+            level_icon = "🔴" if log.get("level") == "CRITICAL" else "🟡" if log.get("level") == "WARNING" else "🔵"
+            result += f"{level_icon} **{log['timestamp']}** - {log['action']}\n"
+            if log.get('details'):
+                result += f"   └─ {log['details']}\n"
+            result += "\n"
+        
+        return result
+
     def cmd_learn(self, args: str = "") -> str:
         return "📊 Continuous Learning: تم تسجيل 0 جلسة حتى الآن"
     
@@ -518,6 +738,7 @@ class ZadaCore:
 | `/test <desc>` | كتابة اختبارات | `/test دالة جمع` |
 | `/file <path>` | قراءة ملف | `/file zada.py` |
 | `/shield` | فحص أمني | `/shield` |
+| `/audit` | سجل الأمان | `/audit` |
 | `/learn` | التعلم المستمر | `/learn` |
 | `/review <path>` | مراجعة كود | `/review file.py` |
 | `/fix <path>` | إصلاح كود | `/fix file.py` |
@@ -543,6 +764,8 @@ class ZadaCore:
             return self.cmd_file(args)
         elif cmd == "shield":
             return self.cmd_shield(args)
+        elif cmd == "audit":
+            return self.cmd_audit(args)
         elif cmd == "learn":
             return self.cmd_learn(args)
         elif cmd == "review":
