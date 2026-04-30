@@ -721,6 +721,55 @@ class ZadaCore:
             result += f"  - Model: `{p['model']}`\n\n"
         return result
 
+    # ========== Prompt Agents Management ==========
+
+    def get_prompt_agents(self) -> list[str]:
+        """Get list of imported agents from prompts folder"""
+        prompts_dir = self.zada_home / "prompts"
+        if not prompts_dir.exists():
+            return []
+        return [p.stem for p in prompts_dir.glob("*.md")]
+
+    def load_agent_prompt(self, agent_name: str) -> str:
+        """Load system prompt for a specific agent"""
+        prompt_path = self.zada_home / "prompts" / f"{agent_name}.md"
+        if prompt_path.exists():
+            return prompt_path.read_text(encoding='utf-8')
+        return ""
+
+    def cmd_use_agent(self, args: str) -> str:
+        """Use a custom agent from prompts folder"""
+        if not args:
+            agents = self.get_prompt_agents()
+            if not agents:
+                return "⚠️ No prompt agents found. Run 'python copy_prompts.py' first."
+
+            result = f"## 🤖 Available Prompt Agents ({len(agents)})\n\n"
+            # Display first 30 agents
+            for agent in agents[:30]:
+                result += f"- `{agent}`\n"
+            if len(agents) > 30:
+                result += f"\n... and {len(agents) - 30} more\n"
+            result += f"\n💡 Usage: `/use-agent <agent-name> <prompt>`\n"
+            result += f"📁 Location: `{self.zada_home / 'prompts'}`"
+            return result
+
+        parts = args.split(maxsplit=1)
+        agent_name = parts[0]
+        user_prompt = parts[1] if len(parts) > 1 else ""
+
+        if not user_prompt:
+            return f"❌ Please provide a prompt. Example: `/use-agent {agent_name} 'Write code'`"
+
+        system_prompt = self.load_agent_prompt(agent_name)
+        if not system_prompt:
+            agents = self.get_prompt_agents()
+            return f"❌ Agent '{agent_name}' not found.\n\nAvailable: {', '.join(agents[:10])}..."
+
+        # Combine system prompt with user prompt
+        full_prompt = f"{system_prompt}\n\n{user_prompt}"
+        return self.ask_ollama(full_prompt)
+
     def cmd_help(self) -> str:
         return """
 ## 🏔️ ZADA v1.0 - Multi-Provider AI Coding Assistant
@@ -745,6 +794,7 @@ class ZadaCore:
 | `/build <desc>` | Solve a build issue | `/build build error` |
 | `/provider [name]` | Display/change provider | `/provider groq` |
 | `/providers` | Display all providers | `/providers` |
+| `/use-agent [name] [prompt]` | Use a prompt agent | `/use-agent zada-3.1-pro "Write code"` |
 | `/help` | Help | `/help` |
 | `/quit` | Quit | `/quit` |
 """
@@ -778,6 +828,8 @@ class ZadaCore:
             return self.cmd_provider(args)
         elif cmd == "providers":
             return self.cmd_providers()
+        elif cmd == "use-agent":
+            return self.cmd_use_agent(args)
         elif cmd == "help":
             return self.cmd_help()
         else:
