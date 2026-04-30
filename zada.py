@@ -136,7 +136,33 @@ class AgentShield:
             return False, "Prompt too long (max 10000 characters)"
         
         return True, "OK"
-    
+
+    def validate_prompt_advanced(self, prompt: str, client_id: str = "default", is_system_prompt: bool = False) -> tuple[bool, str]:
+        """Advanced multi-layer prompt validation"""
+
+        # If this is a System Prompt (from prompts folder), relax the check
+        if is_system_prompt:
+            # Only check for very dangerous patterns
+            critical_patterns = [
+                r"ignore.*instructions",
+                r"bypass.*security",
+                r"override.*system",
+                r"sudo\s+rm\s+-rf",  # Only dangerous rm -rf
+            ]
+            for pattern in critical_patterns:
+                if re.search(pattern, prompt, re.IGNORECASE):
+                    self.audit("SYSTEM_PROMPT_BLOCKED", {"reason": pattern, "client": client_id}, "CRITICAL")
+                    return False, "System prompt contains dangerous pattern"
+            return True, prompt
+
+        # Normal check (for regular users)
+        # Use existing validate_prompt for standard validation
+        valid, msg = self.validate_prompt(prompt)
+        if not valid:
+            return False, msg
+
+        return True, prompt
+
     def check_rate_limit(self) -> Tuple[bool, str]:
         """التحقق من معدل الطلبات"""
         current_minute = int(time.time() / 60)
@@ -768,7 +794,13 @@ class ZadaCore:
 
         # Combine system prompt with user prompt
         full_prompt = f"{system_prompt}\n\n{user_prompt}"
-        return self.ask_ollama(full_prompt)
+
+        # Pass is_system_prompt=True to relax security check
+        valid, clean_prompt = self.shield.validate_prompt_advanced(full_prompt, "agent", is_system_prompt=True)
+        if not valid:
+            return f"🔒 Security: {clean_prompt}"
+
+        return self.ask_ollama(clean_prompt)
 
     def cmd_help(self) -> str:
         return """
