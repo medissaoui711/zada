@@ -125,22 +125,25 @@ class AgentShield:
         if not prompt:
             return True, "OK"
 
-        # إذا كان System Prompt، خفف الفحص
+        # للـ system prompts، نسمح بطول أكبر
+        max_length = 50000 if is_system_prompt else 10000
+
+        if len(prompt) > max_length:
+            return False, f"Prompt too long (max {max_length} characters)"
+
+        # إذا كان System Prompt، خفف الفحص (فقط الأنماط الخطيرة)
         if is_system_prompt:
-            # فقط افحص الأنماط الخطيرة جداً
             critical_patterns = ['rm -rf /', 'drop database', 'truncate table', 'sudo rm']
             for pattern in critical_patterns:
                 if pattern in prompt.lower():
                     return False, f"Critical pattern '{pattern}' is forbidden"
             return True, "OK"
 
-        # الفحص العادي
+        # الفحص العادي للمستخدمين العاديين
         prompt_lower = prompt.lower()
         for pattern in self.FORBIDDEN_PATTERNS:
             if re.search(re.escape(pattern), prompt_lower):
                 return False, f"Pattern '{pattern}' is forbidden"
-        if len(prompt) > 10000:
-            return False, "Prompt too long (max 10000 characters)"
         return True, "OK"
 
     def validate_prompt_advanced(self, prompt: str, client_id: str = "default", is_system_prompt: bool = False) -> tuple[bool, str]:
