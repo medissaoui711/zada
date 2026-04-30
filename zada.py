@@ -801,6 +801,13 @@ class ZadaCore:
             agents = self.get_prompt_agents()
             return f"❌ Agent '{agent_name}' not found.\n\nAvailable: {', '.join(agents[:10])}..."
 
+        # Trim large system prompts to avoid timeout
+        max_system_len = 8000
+        original_len = len(system_prompt)
+        if len(system_prompt) > max_system_len:
+            system_prompt = system_prompt[:max_system_len] + "\n... [truncated for performance]"
+            console.print(f"[dim]ℹ️ System prompt trimmed: {original_len} → {max_system_len} chars[/dim]")
+
         # Combine system prompt with user prompt
         full_prompt = f"{system_prompt}\n\n{user_prompt}"
 
