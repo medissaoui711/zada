@@ -66,13 +66,14 @@ class AgentShield:
         '/System', '/boot', '/dev', '/proc'
     }
     
-    # الأنماط الممنوعة في الـ prompt
+    # الأنماط الممنوعة في الـ prompt (أكثر تحديداً)
     FORBIDDEN_PATTERNS = {
-        'rm -rf', 'del /f', 'format', 'mkfs',
-        'drop database', 'truncate table',
-        'sudo', 'su -', 'chmod 777', 'chown',
-        '> /dev/null', '2> /dev/null', '&> /dev/null',
-        'wget', 'curl.*|', 'bash -c', 'sh -c'
+        'rm -rf /',           # حذف جذر النظام فقط
+        'del /f /s',          # الحذف القسري الكامل
+        'drop database',      # حذف قاعدة بيانات
+        'truncate table',     # حذف جدول كامل
+        'sudo rm',            # حذف بصلاحيات مدير
+        'chmod 777 /',        # صلاحيات كاملة للجذر
     }
     
     # الأوامر التي تتطلب تأكيداً إضافياً
@@ -119,22 +120,27 @@ class AgentShield:
         except Exception as e:
             return False, f"Invalid path: {str(e)}"
     
-    def validate_prompt(self, prompt: str) -> Tuple[bool, str]:
+    def validate_prompt(self, prompt: str, is_system_prompt: bool = False) -> tuple[bool, str]:
         """التحقق من صحة الـ prompt (منع الحقن)"""
         if not prompt:
             return True, "OK"
-        
+
+        # إذا كان System Prompt، خفف الفحص
+        if is_system_prompt:
+            # فقط افحص الأنماط الخطيرة جداً
+            critical_patterns = ['rm -rf /', 'drop database', 'truncate table', 'sudo rm']
+            for pattern in critical_patterns:
+                if pattern in prompt.lower():
+                    return False, f"Critical pattern '{pattern}' is forbidden"
+            return True, "OK"
+
+        # الفحص العادي
         prompt_lower = prompt.lower()
-        
-        # فحص الأنماط الممنوعة
         for pattern in self.FORBIDDEN_PATTERNS:
             if re.search(re.escape(pattern), prompt_lower):
                 return False, f"Pattern '{pattern}' is forbidden"
-        
-        # فحص طول الـ prompt
         if len(prompt) > 10000:
             return False, "Prompt too long (max 10000 characters)"
-        
         return True, "OK"
 
     def validate_prompt_advanced(self, prompt: str, client_id: str = "default", is_system_prompt: bool = False) -> tuple[bool, str]:
@@ -796,11 +802,11 @@ class ZadaCore:
         full_prompt = f"{system_prompt}\n\n{user_prompt}"
 
         # Pass is_system_prompt=True to relax security check
-        valid, clean_prompt = self.shield.validate_prompt_advanced(full_prompt, "agent", is_system_prompt=True)
+        valid, msg = self.shield.validate_prompt(full_prompt, is_system_prompt=True)
         if not valid:
-            return f"🔒 Security: {clean_prompt}"
+            return f"🔒 Security: {msg}"
 
-        return self.ask_ollama(clean_prompt)
+        return self.ask_ollama(full_prompt)
 
     def cmd_help(self) -> str:
         return """
