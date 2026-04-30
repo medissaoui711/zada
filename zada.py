@@ -353,9 +353,9 @@ class ZadaCore:
             console.print(f"[yellow]⚠️ Rules error: {e}[/yellow]")
         return rules
     
-    def ask_ollama(self, prompt: str) -> str:
+    def ask_ollama(self, prompt: str, is_system_prompt: bool = False) -> str:
         """Send request to LLM (supports Local and Cloud)"""
-        return self.ask_llm(prompt, "local")
+        return self.ask_llm(prompt, "local", is_system_prompt=is_system_prompt)
 
     # ========== Cloud APIs ==========
     def ask_openai(self, prompt: str) -> str:
@@ -524,11 +524,11 @@ class ZadaCore:
                 console.print("\n[yellow]⚠️ Cancelled, using Local[/yellow]")
                 return "local"
 
-    def ask_llm(self, prompt: str, provider: str = None) -> str:
+    def ask_llm(self, prompt: str, provider: str = None, is_system_prompt: bool = False) -> str:
         """Send request with security check"""
-        
-        # 1. Validate prompt
-        valid, msg = self.shield.validate_prompt(prompt)
+
+        # 1. Validate prompt (with system prompt bypass if needed)
+        valid, msg = self.shield.validate_prompt(prompt, is_system_prompt=is_system_prompt)
         if not valid:
             self.shield.audit("BLOCKED_PROMPT", {"prompt": prompt[:100], "reason": msg}, "WARNING")
             return f"🔒 Security: {msg}"
@@ -804,12 +804,7 @@ class ZadaCore:
         # Combine system prompt with user prompt
         full_prompt = f"{system_prompt}\n\n{user_prompt}"
 
-        # Pass is_system_prompt=True to relax security check
-        valid, msg = self.shield.validate_prompt(full_prompt, is_system_prompt=True)
-        if not valid:
-            return f"🔒 Security: {msg}"
-
-        return self.ask_ollama(full_prompt)
+        return self.ask_ollama(full_prompt, is_system_prompt=True)
 
     def cmd_help(self) -> str:
         return """
