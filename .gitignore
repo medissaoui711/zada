@@ -35,3 +35,9 @@ env/
 # OS
 .DS_Store
 Thumbs.db
+
+# Local tools (not for sharing)
+copy_prompts.py
+
+# ZADA data
+.zada/
