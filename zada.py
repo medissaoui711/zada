@@ -276,8 +276,11 @@ class ZadaCore:
         # Add AgentShield
         self.shield = AgentShield()
         
-        console.print(f"[green]✅ ZADA initialized with AgentShield[/green]")
-        console.print(f"[dim]📊 Agents: {len(self.agents)} | Skills: {len(self.skills)} | Rules: {len(self.rules)}[/dim]")
+        console.print(f"[green]✅ ZADA v2.0 initialized with AgentShield[/green]")
+        prompt_agents = len(self.get_prompt_agents())
+        total_agents = len(self.agents) + prompt_agents
+        console.print(f"[dim]📊 Base Agents: {len(self.agents)} | Prompt Agents: {prompt_agents} | Total: {total_agents}[/dim]")
+        console.print(f"[dim]📊 Skills: {len(self.skills)} | Rules: {len(self.rules)}[/dim]")
     
     def load_agents(self) -> list[dict[str, Any]]:
         agents: list[dict[str, Any]] = []
@@ -816,6 +819,84 @@ class ZadaCore:
 
         return self.ask_ollama(full_prompt, is_system_prompt=True)
 
+    def cmd_model(self, args: str) -> str:
+        """Display interactive list of available agents/models"""
+        agents = self.get_prompt_agents()
+
+        if not agents:
+            return "⚠️ No agents found. Run 'python copy_prompts.py' first."
+
+        # Group agents by category
+        agents_by_group = {
+            "🧠 Gemini": [a for a in agents if "gemini" in a or "3." in a],
+            "🤖 Claude": [a for a in agents if "claude" in a],
+            "💡 GPT": [a for a in agents if "gpt" in a or "o4" in a or "o3" in a],
+            "⚡ Grok": [a for a in agents if "grok" in a or "-x" == a[-2:]],
+            "🔍 Search": [a for a in agents if "search" in a or "web" in a],
+            "📱 Social": [a for a in agents if "social" in a or "meta" in a],
+            "🛠️ Code/Tools": [a for a in agents if "code" in a or "tool" in a or "codex" in a],
+            "📦 Others": []
+        }
+
+        # Add uncategorized to Others
+        categorized = set()
+        for group_agents in agents_by_group.values():
+            categorized.update(group_agents)
+        agents_by_group["📦 Others"] = [a for a in agents if a not in categorized]
+
+        result = "## 🤖 Available Models / Agents\n\n"
+        result += "Select a model by typing its number:\n\n"
+
+        index = 1
+        self.model_menu = {}
+
+        for group, group_agents in agents_by_group.items():
+            if group_agents:
+                result += f"### {group}\n"
+                for agent in sorted(group_agents)[:10]:
+                    display_name = agent.replace("zada-", "").replace("-", " ").title()
+                    result += f"  {index}. `{display_name}` (`{agent}`)\n"
+                    self.model_menu[str(index)] = agent
+                    index += 1
+                result += "\n"
+
+        result += f"\n💡 Total: {len(agents)} agents available\n"
+        result += "Usage: `/select <number>` or `/use-agent <name>`"
+
+        return result
+
+    def cmd_select(self, args: str) -> str:
+        """Select an agent by number or name and set as default"""
+        if not args:
+            return "❌ Please provide agent name or number. Example: `/select 12` or `/select zada-code`"
+
+        agents = self.get_prompt_agents()
+
+        # If input is a number
+        if args.isdigit() and hasattr(self, 'model_menu') and args in self.model_menu:
+            selected = self.model_menu[args]
+        elif args in agents:
+            selected = args
+        else:
+            matches = [a for a in agents if args.lower() in a.lower()]
+            if matches:
+                selected = matches[0]
+            else:
+                return f"❌ Agent '{args}' not found.\nUse `/model` to see available agents."
+
+        self.default_agent = selected
+        return f"✅ Default agent set to: `{selected}`\n\nNow you can use:\n`/ask <prompt>` without specifying the agent"
+
+    def cmd_ask(self, args: str) -> str:
+        """Ask the default agent"""
+        if not args:
+            return "❌ Please provide a prompt. Example: `/ask What is AI?`"
+
+        if not hasattr(self, 'default_agent') or not self.default_agent:
+            return "❌ No default agent selected. Use `/model` first, then `/select <number>`"
+
+        return self.cmd_use_agent(f"{self.default_agent} {args}")
+
     def cmd_help(self) -> str:
         return """
 ## 🏔️ ZADA v1.0 - Multi-Provider AI Coding Assistant
@@ -841,7 +922,10 @@ class ZadaCore:
 | `/provider [name]` | Display/change provider | `/provider groq` |
 | `/providers` | Display all providers | `/providers` |
 | `/use-agent [name] [prompt]` | Use a prompt agent | `/use-agent zada-3.1-pro "Write code"` |
-| `/help` | Help | `/help` |
+| `/model` | Display interactive agent list | `/model` |
+| `/select <number/name>` | Set default agent | `/select zada-code` or `/select 5` |
+| `/ask <prompt>` | Ask the default agent | `/ask "What is AI?"` |
+| `/help` | Display this help | `/help` |
 | `/quit` | Quit | `/quit` |
 """
     
@@ -876,6 +960,12 @@ class ZadaCore:
             return self.cmd_providers()
         elif cmd == "use-agent":
             return self.cmd_use_agent(args)
+        elif cmd == "model":
+            return self.cmd_model(args)
+        elif cmd == "select":
+            return self.cmd_select(args)
+        elif cmd == "ask":
+            return self.cmd_ask(args)
         elif cmd == "help":
             return self.cmd_help()
         else:
@@ -897,9 +987,10 @@ class ZadaCore:
 ║                                                                              ║
 ║   ┌─────────────────────────────────────────────────────────────────────────┐║
 ║   │  $ python zada.py                                                       │║
-║   │  ✅ ZADA v1.0 initialized                                              │║
-║   │  📊 Agents: 47 | Skills: 19 | Rules: 12                                │║
-║   │  🏔️ ZADA ready! Type /help to see all commands                        │║
+║   │  ✅ ZADA v2.0 initialized                                              │║
+║   │  📊 Base Agents: 47 | Prompt Agents: 156 | Total: 203                  │║
+║   │  📊 Skills: 19 | Rules: 12                                             │║
+║   │  🏔️ ZADA ready! Type /model to see all agents | /help for commands   │║
 ║   └─────────────────────────────────────────────────────────────────────────┘║
 ║                                                                              ║
 ║   Where Code Grows                                                           ║
@@ -908,13 +999,16 @@ class ZadaCore:
 """
         console.print(logo, style="cyan")
 
+        prompt_agents = len(self.get_prompt_agents())
+        total_agents = len(self.agents) + prompt_agents
         console.print(Panel.fit(
-            "[bold cyan]🏔️ ZADA v1.0 - Multi-Provider AI Coding Assistant[/bold cyan]\n"
-            f"[yellow]📁 Workspace: {self.current_workspace}[/yellow]",
+            "[bold cyan]🏔️ ZADA v2.0 - Sovereign AI Framework[/bold cyan]\n"
+            f"[yellow]📁 Workspace: {self.current_workspace}[/yellow]\n"
+            f"[dim]🤖 {total_agents} agents ready ({len(self.agents)} base + {prompt_agents} prompt)[/dim]",
             border_style="cyan"
         ))
-        console.print(f"\n[green]✅ ZADA ready! {len(self.agents)} agents, {len(self.skills)} skills[/green]\n")
-        console.print("[dim]💡 Type /help to see all commands[/dim]\n")
+        console.print(f"\n[green]✅ ZADA ready! {total_agents} total agents ({len(self.agents)} base + {prompt_agents} prompt)[/green]\n")
+        console.print("[dim]💡 Type /model to see all agents | /help for commands[/dim]\n")
         
         while True:
             try:
