@@ -309,11 +309,15 @@ class ZadaCore:
         skills: list[dict[str, Any]] = []
         skills_dir = self.zada_home / "skills"
 
+        console.print(f"[dim][DEBUG] Loading skills from: {skills_dir}[/dim]")
+
         if skills_dir.exists():
             for category_dir in skills_dir.glob("*"):
                 if category_dir.is_dir():
                     for skill_file in category_dir.glob("*.md"):
                         if skill_file.name.endswith('.metadata.json'):
+                            continue
+                        if skill_file.name.endswith('README.md'):
                             continue
 
                         # Read description from metadata file if found
@@ -333,6 +337,7 @@ class ZadaCore:
                             "description": description
                         })
 
+        console.print(f"[dim][DEBUG] Loaded {len(skills)} skills[/dim]")
         console.print(f"[dim]📚 Loaded {len(skills)} skills from folders[/dim]")
         return skills
     
