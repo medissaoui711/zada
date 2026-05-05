@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🏔️ ZADA v1.0 - Multi-Provider AI Coding Assistant
+🏔️.cartage v1.0 - Multi-Provider AI Coding Assistant
 Where Code Grows
 """
 
@@ -9,6 +9,7 @@ import subprocess
 import sqlite3
 import sys
 import json
+import asyncio
 from pathlib import Path
 from typing import Any
 from rich.console import Console
@@ -16,14 +17,17 @@ from rich.markdown import Markdown
 from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
+# Browser imports
+from playwright.async_api import async_playwright
+
 console = Console()
 
-ZADA_HOME = Path.home() / ".zada"
-DB_PATH = ZADA_HOME / "zada.db"
+CARTAGE_HOME = Path.home() / ".cartage"
+DB_PATH = CARTAGE_HOME / "cartage.db"
 OLLAMA_MODEL = "qwen2.5-coder"
 
 # ========== إعدادات Cloud APIs ==========
-# OpenAI
+# OpenAI / OpenRouter
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
 OPENAI_MODEL = "gpt-3.5-turbo"
 
@@ -50,12 +54,12 @@ from datetime import datetime
 from typing import Tuple, List, Dict, Any
 
 class AgentShield:
-    """طبقة أمان متكاملة لحماية Zada من الأوامر الخطرة"""
+    """طبقة أمان متكاملة لحماية.cartage من الأوامر الخطرة"""
     
     # قائمة الأوامر المسموح بها فقط (Whitelist)
     ALLOWED_COMMANDS = {
         'ls', 'dir', 'cat', 'type', 'echo', 'python', 'pip',
-        'git', 'ollama', 'code', 'notepad', 'zada', 'apex'
+        'git', 'ollama', 'code', 'notepad', 'cartage', 'apex'
     }
     
     # الملفات والمسارات الممنوعة
@@ -86,7 +90,7 @@ class AgentShield:
         self.request_count = 0
         self.max_requests_per_minute = 30
         self.last_minute = 0
-        self.audit_log = Path.home() / ".zada" / "audit.log"
+        self.audit_log = Path.home() / ".cartage" / "audit.log"
         self.audit_log.parent.mkdir(parents=True, exist_ok=True)
     
     def validate_command(self, command: str) -> Tuple[bool, str]:
@@ -246,9 +250,118 @@ class AgentShield:
         
         return stats
 
+# ========== Browser Agent - Web Navigation ==========
+class BrowserAgent:
+    """Web browsing agent using Playwright"""
+    
+    def __init__(self):
+        self.playwright = None
+        self.browser = None
+        self.page = None
+        self.is_initialized = False
+    
+    async def init(self, headless: bool = True):
+        """Initialize browser"""
+        try:
+            self.playwright = await async_playwright().start()
+            self.browser = await self.playwright.chromium.launch(headless=headless)
+            self.page = await self.browser.new_page()
+            self.is_initialized = True
+            return "✅ Browser initialized"
+        except Exception as e:
+            return f"❌ Browser initialization failed: {str(e)}"
+    
+    async def navigate(self, url: str) -> str:
+        """Navigate to URL"""
+        if not self.is_initialized:
+            return "❌ Browser not initialized"
+        try:
+            if not url.startswith("http"):
+                url = "https://" + url
+            await self.page.goto(url, timeout=30000)
+            title = await self.page.title()
+            return f"✅ Navigated to {url}\n📄 Title: {title}"
+        except Exception as e:
+            return f"❌ Navigation failed: {str(e)}"
+    
+    async def click(self, selector: str) -> str:
+        """Click on element"""
+        if not self.is_initialized:
+            return "❌ Browser not initialized"
+        try:
+            await self.page.click(selector)
+            return f"✅ Clicked on: {selector}"
+        except Exception as e:
+            return f"❌ Click failed: {str(e)}"
+    
+    async def scroll(self, amount: int = 500) -> str:
+        """Scroll page"""
+        if not self.is_initialized:
+            return "❌ Browser not initialized"
+        try:
+            await self.page.evaluate(f"window.scrollBy(0, {amount})")
+            return f"✅ Scrolled by {amount}px"
+        except Exception as e:
+            return f"❌ Scroll failed: {str(e)}"
+    
+    async def type_text(self, selector: str, text: str) -> str:
+        """Type text into input field"""
+        if not self.is_initialized:
+            return "❌ Browser not initialized"
+        try:
+            await self.page.fill(selector, text)
+            return f"✅ Typed '{text}' into: {selector}"
+        except Exception as e:
+            return f"❌ Typing failed: {str(e)}"
+    
+    async def screenshot(self, filename: str = None) -> str:
+        """Take screenshot"""
+        if not self.is_initialized:
+            return "❌ Browser not initialized"
+        try:
+            if not filename:
+                from datetime import datetime
+                filename = f"screenshot_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
+            await self.page.screenshot(path=filename)
+            return f"✅ Screenshot saved: {filename}"
+        except Exception as e:
+            return f"❌ Screenshot failed: {str(e)}"
+    
+    async def get_text(self) -> str:
+        """Extract page text"""
+        if not self.is_initialized:
+            return "❌ Browser not initialized"
+        try:
+            text = await self.page.evaluate("document.body.innerText")
+            if len(text) > 3000:
+                text = text[:3000] + "\n... [truncated]"
+            return text
+        except Exception as e:
+            return f"❌ Extract failed: {str(e)}"
+    
+    async def get_html(self) -> str:
+        """Extract page HTML"""
+        if not self.is_initialized:
+            return "❌ Browser not initialized"
+        try:
+            html = await self.page.evaluate("document.documentElement.outerHTML")
+            if len(html) > 5000:
+                html = html[:5000] + "\n... [truncated]"
+            return html
+        except Exception as e:
+            return f"❌ Extract failed: {str(e)}"
+    
+    async def close(self):
+        """Close browser"""
+        if self.browser:
+            await self.browser.close()
+        if self.playwright:
+            await self.playwright.stop()
+        self.is_initialized = False
 
-class ZadaCore:
-    zada_home: Path
+
+class CartageCore:
+    CARTAGE_HOME: Path
     db_path: Path
     current_workspace: Path
     conversation_history: list[dict[str, Any]]
@@ -258,7 +371,7 @@ class ZadaCore:
     rules: list[dict[str, Any]]
 
     def __init__(self) -> None:
-        self.zada_home = ZADA_HOME
+        self.CARTAGE_HOME = CARTAGE_HOME
         self.db_path = DB_PATH
         self.current_workspace = Path.cwd()
         self.conversation_history: list[dict[str, Any]] = []
@@ -276,7 +389,7 @@ class ZadaCore:
         # Add AgentShield
         self.shield = AgentShield()
         
-        console.print(f"[green]✅ ZADA v2.0 initialized with AgentShield[/green]")
+        console.print(f"[green]✅ CARTAGE v1.0 initialized with AgentShield[/green]")
         prompt_agents = len(self.get_prompt_agents())
         total_agents = len(self.agents) + prompt_agents
         console.print(f"[dim]📊 Base Agents: {len(self.agents)} | Prompt Agents: {prompt_agents} | Total: {total_agents}[/dim]")
@@ -305,37 +418,44 @@ class ZadaCore:
         return agents
     
     def load_skills(self) -> list[dict[str, Any]]:
-        """Load all skills from the skills directory directly"""
+        """Load all skills from the skills directory (recursively)"""
         skills: list[dict[str, Any]] = []
-        skills_dir = self.zada_home / "skills"
+        skills_dir = self.CARTAGE_HOME / "skills"
 
         console.print(f"[dim][DEBUG] Loading skills from: {skills_dir}[/dim]")
 
         if skills_dir.exists():
-            for category_dir in skills_dir.glob("*"):
-                if category_dir.is_dir():
-                    for skill_file in category_dir.glob("*.md"):
-                        if skill_file.name.endswith('.metadata.json'):
-                            continue
-                        if skill_file.name.endswith('README.md'):
-                            continue
+            all_files = list(skills_dir.glob("**/*.md"))
+            console.print(f"[dim][DEBUG] Found {len(all_files)} .md files total[/dim]")
 
-                        # Read description from metadata file if found
-                        description = ""
-                        json_file = category_dir / f"{skill_file.stem}.metadata.json"
-                        if json_file.exists():
-                            try:
-                                data = json.loads(json_file.read_text(encoding='utf-8'))
-                                description = data.get("description", "")[:150]
-                            except:
-                                pass
+            # Search recursively in all subdirectories
+            for skill_file in all_files:
+                if skill_file.name.endswith('.metadata.json'):
+                    continue
+                if skill_file.name.endswith('README.md'):
+                    continue
 
-                        skills.append({
-                            "name": skill_file.stem,
-                            "category": category_dir.name,
-                            "level": "intermediate",
-                            "description": description
-                        })
+                # Extract folder name as category
+                category = skill_file.parent.name
+                if category == "skills":
+                    category = "general"
+
+                # Read description from metadata file if found
+                description = ""
+                json_file = skill_file.parent / f"{skill_file.stem}.metadata.json"
+                if json_file.exists():
+                    try:
+                        data = json.loads(json_file.read_text(encoding='utf-8'))
+                        description = data.get("description", "")[:150]
+                    except:
+                        pass
+
+                skills.append({
+                    "name": skill_file.stem,
+                    "category": category,
+                    "level": "intermediate",
+                    "description": description
+                })
 
         console.print(f"[dim][DEBUG] Loaded {len(skills)} skills[/dim]")
         console.print(f"[dim]📚 Loaded {len(skills)} skills from folders[/dim]")
@@ -366,6 +486,46 @@ class ZadaCore:
         return self.ask_llm(prompt, "local", is_system_prompt=is_system_prompt)
 
     # ========== Cloud APIs ==========
+    def ask_openrouter(self, prompt: str) -> str:
+        """استدعاء OpenRouter API - سريع جداً"""
+        import requests
+        
+        # Load from .env file
+        from dotenv import load_dotenv
+        load_dotenv()
+        
+        api_key = os.getenv("OPENROUTER_API_KEY")
+        if not api_key:
+            return "❌ OPENROUTER_API_KEY not found in .env"
+        
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+        
+        payload = {
+            "model": "openrouter/auto",  # يختار أفضل نموذج تلقائياً
+            "messages": [{"role": "user", "content": prompt}],
+            "temperature": 0.4,
+            "max_tokens": 4096
+        }
+        
+        try:
+            console.print("[dim]⏳ Calling OpenRouter (fast)...[/dim]")
+            response = requests.post(
+                "https://openrouter.ai/api/v1/chat/completions",
+                json=payload,
+                headers=headers,
+                timeout=300,  # 5 دقائق
+            )
+            
+            if response.status_code == 200:
+                return response.json()["choices"][0]["message"]["content"]
+            else:
+                return f"❌ OpenRouter error: {response.status_code} - {response.text}"
+        except Exception as e:
+            return f"❌ Error: {str(e)}"
+    
     def ask_openai(self, prompt: str) -> str:
         """Send request to OpenAI API"""
         if not OPENAI_API_KEY:
@@ -454,7 +614,7 @@ class ZadaCore:
                     "temperature": 0.4,
                     "max_tokens": 4096
                 },
-                timeout=60
+                timeout=300,  # 5 دقائق
             )
             if response.status_code == 200:
                 return response.json()["choices"][0]["message"]["content"]
@@ -504,6 +664,11 @@ class ZadaCore:
             providers.append({"name": "groq", "display": "⚡ Groq (Fast)", "model": GROQ_MODEL, "available": True})
         if TOGETHER_API_KEY:
             providers.append({"name": "together", "display": "🤝 Together.ai", "model": TOGETHER_MODEL, "available": True})
+        # Check for OpenRouter in .env
+        from dotenv import load_dotenv
+        load_dotenv()
+        if os.getenv("OPENROUTER_API_KEY"):
+            providers.append({"name": "openrouter", "display": "⚡ OpenRouter - Fast cloud models (recommended)", "model": "auto", "available": True})
         return providers
 
     def select_provider_interactive(self) -> str:
@@ -514,6 +679,7 @@ class ZadaCore:
             console.print(f"  {i}. {p['display']} [dim]({p['model']})[/dim]")
         console.print("\n[bold yellow]💡 Suggestions:[/bold yellow]")
         console.print("  • [green]Local (Ollama)[/green] - Free, works offline")
+        console.print("  • [green]OpenRouter[/green] - ⚡ Fast cloud models (recommended)")
         console.print("  • [green]Groq[/green] - Very fast, free API key required")
         console.print("  • [green]OpenAI[/green] - Powerful, requires subscription")
         while True:
@@ -573,6 +739,8 @@ class ZadaCore:
             return self.ask_groq(prompt)
         elif provider == "together":
             return self.ask_together(prompt)
+        elif provider == "openrouter":
+            return self.ask_openrouter(prompt)
         return f"❌ Unknown provider: {provider}"
 
     def cmd_agents(self, args: str = "") -> str:
@@ -596,6 +764,177 @@ class ZadaCore:
                 result += f" ... and {len(names)-15} more"
             result += "\n\n"
         return result
+    
+    # ========== حفظ وتصدير الملفات ==========
+    
+    def save_last_response(self, filename: str = None) -> str:
+        """حفظ آخر رد في ملف"""
+        if not self.conversation_history:
+            return "❌ No response to save"
+        
+        last_response = self.conversation_history[-1]["content"]
+        
+        if not filename:
+            from datetime import datetime
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"response_{timestamp}.md"
+        
+        filepath = Path(self.current_workspace) / filename
+        filepath.write_text(last_response, encoding='utf-8')
+        
+        return f"✅ Response saved to: {filepath}"
+    
+    def export_last_code(self, filename: str = None) -> str:
+        """تصدير الكود من آخر رد"""
+        if not self.conversation_history:
+            return "❌ No response to export"
+        
+        last_response = self.conversation_history[-1]["content"]
+        
+        # استخراج كتل الكود
+        import re
+        code_blocks = re.findall(r'```(?:python)?\n(.*?)```', last_response, re.DOTALL)
+        
+        if not code_blocks:
+            return "❌ No code found in response"
+        
+        if not filename:
+            from datetime import datetime
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"code_{timestamp}.py"
+        
+        filepath = Path(self.current_workspace) / filename
+        filepath.write_text(code_blocks[0], encoding='utf-8')
+        
+        return f"✅ Code exported to: {filepath}"
+    
+    def cmd_save(self, args: str) -> str:
+        """حفظ آخر رد"""
+        return self.save_last_response(args if args else None)
+    
+    def cmd_export(self, args: str) -> str:
+        """تصدير الكود"""
+        return self.export_last_code(args if args else None)
+    
+    # ========== Browser Commands ==========
+    
+    async def cmd_browser_init(self) -> str:
+        """Initialize browser"""
+        if not hasattr(self, 'browser_agent'):
+            self.browser_agent = BrowserAgent()
+        result = await self.browser_agent.init(headless=True)
+        return result
+    
+    async def cmd_browser_navigate(self, url: str) -> str:
+        """Navigate to URL"""
+        if not hasattr(self, 'browser_agent'):
+            return "❌ Browser not initialized. Use `/browser init` first"
+        return await self.browser_agent.navigate(url)
+    
+    async def cmd_browser_click(self, selector: str) -> str:
+        """Click on element"""
+        if not hasattr(self, 'browser_agent'):
+            return "❌ Browser not initialized"
+        return await self.browser_agent.click(selector)
+    
+    async def cmd_browser_scroll(self, amount: str = "500") -> str:
+        """Scroll page"""
+        if not hasattr(self, 'browser_agent'):
+            return "❌ Browser not initialized"
+        return await self.browser_agent.scroll(int(amount))
+    
+    async def cmd_browser_type(self, args: str) -> str:
+        """Type text"""
+        parts = args.split(maxsplit=1)
+        if len(parts) < 2:
+            return "❌ Usage: `/type selector:text`"
+        selector, text = parts[0], parts[1]
+        return await self.browser_agent.type_text(selector, text)
+    
+    async def cmd_browser_screenshot(self, filename: str = None) -> str:
+        """Take screenshot"""
+        if not hasattr(self, 'browser_agent'):
+            return "❌ Browser not initialized"
+        return await self.browser_agent.screenshot(filename)
+    
+    async def cmd_browser_text(self) -> str:
+        """Extract page text"""
+        if not hasattr(self, 'browser_agent'):
+            return "❌ Browser not initialized"
+        return await self.browser_agent.get_text()
+    
+    async def cmd_browser_html(self) -> str:
+        """Extract page HTML"""
+        if not hasattr(self, 'browser_agent'):
+            return "❌ Browser not initialized"
+        return await self.browser_agent.get_html()
+    
+    async def cmd_browser_close(self) -> str:
+        """Close browser"""
+        if not hasattr(self, 'browser_agent'):
+            return "❌ Browser not initialized"
+        await self.browser_agent.close()
+        delattr(self, 'browser_agent')
+        return "✅ Browser closed"
+    
+    def cmd_browser(self, args: str) -> str:
+        """Handle browser commands synchronously"""
+        if not args:
+            return self._browser_help()
+        
+        parts = args.split(maxsplit=1)
+        subcmd = parts[0].lower()
+        subargs = parts[1] if len(parts) > 1 else ""
+        
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        
+        if subcmd == "init":
+            result = loop.run_until_complete(self.cmd_browser_init())
+        elif subcmd == "go" or subcmd == "navigate":
+            result = loop.run_until_complete(self.cmd_browser_navigate(subargs))
+        elif subcmd == "click":
+            result = loop.run_until_complete(self.cmd_browser_click(subargs))
+        elif subcmd == "scroll":
+            result = loop.run_until_complete(self.cmd_browser_scroll(subargs))
+        elif subcmd == "type":
+            result = loop.run_until_complete(self.cmd_browser_type(subargs))
+        elif subcmd == "shot" or subcmd == "screenshot":
+            result = loop.run_until_complete(self.cmd_browser_screenshot(subargs))
+        elif subcmd == "text":
+            result = loop.run_until_complete(self.cmd_browser_text())
+        elif subcmd == "html":
+            result = loop.run_until_complete(self.cmd_browser_html())
+        elif subcmd == "close":
+            result = loop.run_until_complete(self.cmd_browser_close())
+        else:
+            result = self._browser_help()
+        
+        loop.close()
+        return result
+    
+    def _browser_help(self) -> str:
+        return """
+## 🌐 Browser Agent Commands
+
+| Command | Description |
+|---------|-------------|
+| `/browser init` | Start browser |
+| `/browser go <url>` | Navigate to URL |
+| `/browser click <selector>` | Click on element |
+| `/browser scroll <px>` | Scroll page |
+| `/browser type <selector>:<text>` | Type text |
+| `/browser screenshot [name]` | Take screenshot |
+| `/browser text` | Extract page text |
+| `/browser html` | Extract page HTML |
+| `/browser close` | Close browser |
+
+**Selectors Examples:**
+- `#button-id` for ID
+- `.class-name` for class
+- `a` for all links
+- `button` for buttons
+"""
     
     def cmd_skills(self, args: str = "") -> str:
         if not self.skills:
@@ -646,11 +985,78 @@ class ZadaCore:
         result += "   - `/skills <word>` - to search\n"
         return result
     
-    def cmd_plan(self, args: str) -> str:
+    def cmd_guidelines(self, args: str = "") -> str:
+        """Display code review guidelines"""
+        guidelines_file = self.CARTAGE_HOME / "rules" / "code-review" / "code-review-guidelines.md"
+        if guidelines_file.exists():
+            content = guidelines_file.read_text(encoding='utf-8')
+            if args:
+                args_lower = args.lower()
+                if "sql" in args_lower:
+                    return "## SQL Injection Prevention\n\nNever construct SQL queries with string concatenation.\n\n**❌ DON'T:**\n```python\nquery = f\"SELECT * FROM users WHERE id = {user_id}\"\n```\n\n**✅ DO:**\n```python\nquery = \"SELECT * FROM users WHERE id = ?\"\ndb.execute(query, (user_id,))\n```"
+                elif "xss" in args_lower:
+                    return "## XSS Prevention\n\nNever insert unsanitized user input into HTML.\n\n**❌ DON'T:**\n```javascript\nelement.innerHTML = userInput;\n```\n\n**✅ DO:**\n```javascript\nelement.textContent = userInput;\n```"
+                elif "n+1" in args_lower or "nplus" in args_lower:
+                    return "## N+1 Query Problem\n\nDon't fetch related data in loops.\n\n**❌ DON'T:**\n```python\nposts = Post.objects.all()\nfor post in posts:\n    print(post.author.name)  # N queries\n```\n\n**✅ DO:**\n```python\nposts = Post.objects.select_related('author').all()\nfor post in posts:\n    print(post.author.name)  # 1 query\n```"
+            return content[:4000]
+        return "⚠️ Guidelines not found. Run setup first."
+    
+    def cmd_skills_list(self, args: str = "") -> str:
+        """List all available skills"""
+        skills_dir = self.CARTAGE_HOME / "skills"
+        if not skills_dir.exists():
+            return "⚠️ No skills found"
+        
+        result = "## 🛠️ Available Skills\n\n"
+        for category_dir in skills_dir.glob("*"):
+            if category_dir.is_dir():
+                result += f"### {category_dir.name.upper()}\n"
+                for skill_file in category_dir.glob("*.md"):
+                    result += f"- `{skill_file.stem}`\n"
+                result += "\n"
+        return result
+    
+    def cmd_research(self, args: str) -> str:
+        """Deep research on a topic using the deep-research agent"""
         if not args:
-            return "❌ Please describe the task"
-        # Shorter and faster formulation
-        return self.ask_ollama(f"Plan for: {args}")
+            return "❌ Please provide a research topic. Example: `/research benefits of intermittent fasting`"
+        return self.cmd_use_agent(f"cartage-deep-research {args}")
+    
+    def cmd_factcheck(self, args: str) -> str:
+        """Fact check a claim using the fact-checker agent"""
+        if not args:
+            return "❌ Please provide a claim to fact check. Example: `/factcheck Humans only use 10% of their brain`"
+        return self.cmd_use_agent(f"cartage-fact-checker {args}")
+    
+    def cmd_email(self, args: str) -> str:
+        """Draft a professional email using the email drafter agent"""
+        if not args:
+            return "❌ Please describe the email you need. Example: `/email meeting request with team about Q4 planning`"
+        return self.cmd_use_agent(f"cartage-email {args}")
+    
+    def cmd_edit(self, args: str) -> str:
+        """Edit and improve text using the editor agent"""
+        if not args:
+            return "❌ Please provide text to edit. Example: `/edit Our company specializes in providing solutions...`"
+        return self.cmd_use_agent(f"cartage-editor {args}")
+    
+    def cmd_fullstack(self, args: str) -> str:
+        """Full-stack web development using the fullstack developer agent"""
+        if not args:
+            return "❌ Please describe the web app you want to build. Example: `/fullstack Create a blog with Next.js and PostgreSQL`"
+        return self.cmd_use_agent(f"cartage-fullstack {args}")
+    
+    def cmd_plan(self, args: str) -> str:
+        """Project planning using the planner agent"""
+        if not args:
+            return "❌ Please describe the project. Example: `/plan website redesign in 6 weeks with 2 developers`"
+        return self.cmd_use_agent(f"cartage-planner {args}")
+    
+    def cmd_python(self, args: str) -> str:
+        """Python development using the python expert agent"""
+        if not args:
+            return "❌ Please describe the Python code you need. Example: `/python Write a function to parse JSON files`"
+        return self.cmd_use_agent(f"cartage-python {args}")
     
     def cmd_code(self, args: str) -> str:
         if not args:
@@ -768,14 +1174,14 @@ class ZadaCore:
 
     def get_prompt_agents(self) -> list[str]:
         """Get list of imported agents from prompts folder"""
-        prompts_dir = self.zada_home / "prompts"
+        prompts_dir = self.CARTAGE_HOME / "prompts"
         if not prompts_dir.exists():
             return []
         return [p.stem for p in prompts_dir.glob("*.md")]
 
     def load_agent_prompt(self, agent_name: str) -> str:
         """Load system prompt for a specific agent"""
-        prompt_path = self.zada_home / "prompts" / f"{agent_name}.md"
+        prompt_path = self.CARTAGE_HOME / "prompts" / f"{agent_name}.md"
         if prompt_path.exists():
             return prompt_path.read_text(encoding='utf-8')
         return ""
@@ -794,7 +1200,7 @@ class ZadaCore:
             if len(agents) > 30:
                 result += f"\n... and {len(agents) - 30} more\n"
             result += f"\n💡 Usage: `/use-agent <agent-name> <prompt>`\n"
-            result += f"📁 Location: `{self.zada_home / 'prompts'}`"
+            result += f"📁 Location: `{self.CARTAGE_HOME / 'prompts'}`"
             return result
 
         parts = args.split(maxsplit=1)
@@ -859,7 +1265,7 @@ class ZadaCore:
             if group_agents:
                 result += f"### {group}\n"
                 for agent in sorted(group_agents)[:10]:
-                    display_name = agent.replace("zada-", "").replace("-", " ").title()
+                    display_name = agent.replace("cartage-", "").replace("-", " ").title()
                     result += f"  {index}. `{display_name}` (`{agent}`)\n"
                     self.model_menu[str(index)] = agent
                     index += 1
@@ -873,7 +1279,7 @@ class ZadaCore:
     def cmd_select(self, args: str) -> str:
         """Select an agent by number or name and set as default"""
         if not args:
-            return "❌ Please provide agent name or number. Example: `/select 12` or `/select zada-code`"
+            return "❌ Please provide agent name or number. Example: `/select 12` or `/select.cartage-code`"
 
         agents = self.get_prompt_agents()
 
@@ -904,7 +1310,7 @@ class ZadaCore:
 
     def cmd_help(self) -> str:
         return """
-## 🏔️ ZADA v1.0 - Multi-Provider AI Coding Assistant
+## 🏔️.cartage v1.0 - Multi-Provider AI Coding Assistant
 
 | Command | Description | Example |
 |-------|-------|------|
@@ -914,10 +1320,18 @@ class ZadaCore:
 | `/skills all` | Display all skills | `/skills all` |
 | `/skills categories` | Display skill categories | `/skills categories` |
 | `/skills <word>` | Search skills | `/skills security` |
+| `/skills-list` | List all available skills | `/skills-list` |
+| `/guidelines [topic]` | Code review guidelines | `/guidelines sql` |
+| `/research <topic>` | Deep research on a topic | `/research AI in healthcare` |
+| `/factcheck <claim>` | Fact check a claim | `/factcheck Humans use 10% of brain` |
+| `/email <desc>` | Draft a professional email | `/email meeting request with team` |
+| `/edit <text>` | Edit and improve text | `/edit Our company specializes in...` |
+| `/fullstack <desc>` | Build full-stack web app | `/fullstack Create a blog with Next.js` |
 | `/plan <desc>` | Plan for a task | `/plan website` |
+| `/python <desc>` | Write Python code with best practices | `/python parse JSON files` |
 | `/code <desc>` | Write code for a task | `/code sum function` |
 | `/test <desc>` | Write tests for a component | `/test sum function` |
-| `/file <path>` | Read a file | `/file zada.py` |
+| `/file <path>` | Read a file | `/file.cartage.py` |
 | `/shield` | Display security report | `/shield` |
 | `/audit` | Display security log | `/audit` |
 | `/learn` | Continuous learning | `/learn` |
@@ -926,10 +1340,13 @@ class ZadaCore:
 | `/build <desc>` | Solve a build issue | `/build build error` |
 | `/provider [name]` | Display/change provider | `/provider groq` |
 | `/providers` | Display all providers | `/providers` |
-| `/use-agent [name] [prompt]` | Use a prompt agent | `/use-agent zada-3.1-pro "Write code"` |
+| `/use-agent [name] [prompt]` | Use a prompt agent | `/use-agent.cartage-3.1-pro "Write code"` |
 | `/model` | Display interactive agent list | `/model` |
-| `/select <number/name>` | Set default agent | `/select zada-code` or `/select 5` |
+| `/select <number/name>` | Set default agent | `/select.cartage-code` or `/select 5` |
 | `/ask <prompt>` | Ask the default agent | `/ask "What is AI?"` |
+| `/save [filename]` | Save last response to file | `/save my_response.md` |
+| `/export [filename]` | Export code from last response | `/export my_code.py` |
+| `/browser <cmd>` | Web browser agent | `/browser go github.com` |
 | `/help` | Display this help | `/help` |
 | `/quit` | Quit | `/quit` |
 """
@@ -939,8 +1356,24 @@ class ZadaCore:
             return self.cmd_agents(args)
         elif cmd == "skills":
             return self.cmd_skills(args)
+        elif cmd == "guidelines":
+            return self.cmd_guidelines(args)
+        elif cmd == "skills-list":
+            return self.cmd_skills_list(args)
+        elif cmd == "research":
+            return self.cmd_research(args)
+        elif cmd == "factcheck":
+            return self.cmd_factcheck(args)
+        elif cmd == "email":
+            return self.cmd_email(args)
+        elif cmd == "edit":
+            return self.cmd_edit(args)
+        elif cmd == "fullstack":
+            return self.cmd_fullstack(args)
         elif cmd == "plan":
             return self.cmd_plan(args)
+        elif cmd == "python":
+            return self.cmd_python(args)
         elif cmd == "code":
             return self.cmd_code(args)
         elif cmd == "test":
@@ -971,57 +1404,71 @@ class ZadaCore:
             return self.cmd_select(args)
         elif cmd == "ask":
             return self.cmd_ask(args)
+        elif cmd == "save":
+            return self.cmd_save(args)
+        elif cmd == "export":
+            return self.cmd_export(args)
+        elif cmd == "browser":
+            return self.cmd_browser(args)
         elif cmd == "help":
             return self.cmd_help()
         else:
             return f"❌ Unknown command: {cmd}\n{self.cmd_help()}"
     
     def run(self):
-        """Run ZADA CLI"""
+        """Run.cartage CLI"""
 
-        # ASCII Art Logo for CLI
-        logo = """
+        # Get actual counts for dynamic display
+        prompt_agents = len(self.get_prompt_agents())
+        total_agents = len(self.agents) + prompt_agents
+        skills_count = len(self.skills)
+        rules_count = len(self.rules)
+
+        # ASCII Art Logo for CLI (dynamic values)
+        logo = f"""
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║                                                                              ║
-║   ███████╗ █████╗ ██████╗  █████╗     ███████╗ █████╗ ██████╗  █████╗        ║
-║   ╚══███╔╝██╔══██╗██╔══██╗██╔══██╗    ╚══███╔╝██╔══██╗██╔══██╗██╔══██║       ║
-║     ███╔╝ ███████║██║  ██║███████║      ███╔╝ ███████║██║  ██║███████║       ║
-║    ███╔╝  ██╔══██║██║  ██║██╔══██║     ███╔╝  ██╔══██║██║  ██║██╔══██║       ║
-║   ███████╗██║  ██║██████╔╝██║  ██║    ███████╗██║  ██║██████╔╝██║  ██║       ║
-║   ╚══════╝╚═╝  ╚═╝╚═════╝ ╚═╝  ╚═╝    ╚══════╝╚═╝  ╚═╝╚═════╝ ╚═╝  ╚═╝       ║
+║    ██████╗ █████╗ ██████╗ ████████╗ █████╗  ██████╗ ███████╗                 ║
+║   ██╔════╝██╔══██╗██╔══██╗╚══██╔══╝██╔══██╗██╔════╝ ██╔════╝                 ║
+║   ██║     ███████║██████╔╝   ██║   ███████║██║  ███╗█████╗                   ║
+║   ██║     ██╔══██║██╔══██╗   ██║   ██╔══██║██║   ██║██╔══╝                   ║
+║   ╚██████╗██║  ██║██║  ██║   ██║   ██║  ██║╚██████╔╝███████╗                 ║
+║    ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝ ╚══════╝                 ║
+║                                                                              ║
+║                         🌊  C A R T A G E  🌊                                ║
+║                                                                              ║
+║                   Where Ancient Wisdom Meets Modern Code                     ║
+║                                                                              ║
+║              𓊈𓊉  حضارة البحر المتوسط تلتقي بذكاء البرمجة  𓊈𓊉               ║
 ║                                                                              ║
 ║   ┌─────────────────────────────────────────────────────────────────────────┐║
-║   │  $ python zada.py                                                       │║
-║   │  ✅ ZADA v2.0 initialized                                              │║
-║   │  📊 Base Agents: 47 | Prompt Agents: 156 | Total: 203                  │║
-║   │  📊 Skills: 19 | Rules: 12                                             │║
-║   │  🏔️ ZADA ready! Type /model to see all agents | /help for commands   │║
+║   │  $ python cartage.py                                                     │║
+║   │  ✅ CARTAGE v1.0 initialized                                            │║
+║   │  📊 Base Agents: {len(self.agents)} | Prompt Agents: {prompt_agents} | Total: {total_agents}{' ' * (6 - len(str(total_agents)))}║
+║   │  📊 Skills: {skills_count} | Rules: {rules_count}{' ' * (39 - len(str(skills_count)) - len(str(rules_count)))}║
+║   │  �️ CARTAGE ready! Type /model to see all agents | /help for commands   │║
 ║   └─────────────────────────────────────────────────────────────────────────┘║
-║                                                                              ║
-║   Where Code Grows                                                           ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 """
         console.print(logo, style="cyan")
 
-        prompt_agents = len(self.get_prompt_agents())
-        total_agents = len(self.agents) + prompt_agents
         console.print(Panel.fit(
-            "[bold cyan]🏔️ ZADA v2.0 - Sovereign AI Framework[/bold cyan]\n"
+            "[bold cyan]🏔️ CARTAGE v1.0 - Sovereign AI Framework[/bold cyan]\n"
             f"[yellow]📁 Workspace: {self.current_workspace}[/yellow]\n"
             f"[dim]🤖 {total_agents} agents ready ({len(self.agents)} base + {prompt_agents} prompt)[/dim]",
             border_style="cyan"
         ))
-        console.print(f"\n[green]✅ ZADA ready! {total_agents} total agents ({len(self.agents)} base + {prompt_agents} prompt)[/green]\n")
+        console.print(f"\n[green]✅ CARTAGE ready! {total_agents} total agents ({len(self.agents)} base + {prompt_agents} prompt)[/green]\n")
         console.print("[dim]💡 Type /model to see all agents | /help for commands[/dim]\n")
         
         while True:
             try:
-                user = console.input("[bold cyan]🏔️ ZADA>[/bold cyan] ").strip()
+                user = console.input("[bold cyan]🏔️ CARTAGE>[/bold cyan] ").strip()
                 if not user:
                     continue
                 if user.lower() in ["/quit", "exit", "quit"]:
-                    console.print("[yellow]👋 Goodbye! ZADA is waiting for your return.[/yellow]")
+                    console.print("[yellow]👋 Goodbye!.cartage is waiting for your return.[/yellow]")
                     break
                 if user.startswith("/"):
                     parts = user.split(maxsplit=1)
@@ -1053,5 +1500,5 @@ if __name__ == "__main__":
         console.print("[green]✅ Ollama connected[/green]")
     except:
         console.print("[yellow]⚠️ Ollama not found[/yellow]")
-    zada = ZadaCore()
-    zada.run()
+    cartage = CartageCore()
+    cartage.run()

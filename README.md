@@ -1,8 +1,8 @@
 <div align="center">
-  <img src="docs/zada-logo.svg" alt="ZADA Logo" width="100%"/>
+  <img src="docs/cartage-logo.svg" alt="cartage Logo" width="100%"/>
 </div>
 
-# 🏔️ ZADA - Multi-Provider AI Coding Assistant
+# 🏔️ cartage - Multi-Provider AI Coding Assistant
 
 Where Code Grows
 
@@ -15,24 +15,24 @@ Where Code Grows
 ![Status](https://img.shields.io/badge/status-Production_Ready-green)
 ![Version](https://img.shields.io/badge/version-1.1-blue)
 
-🌐 **Website:** [zada-8xz.pages.dev](https://zada-8xz.pages.dev)
+🌐 **Website:** [cartage-8xz.pages.dev](https://cartage-8xz.pages.dev)
 
 ![Hugging Face Space](https://img.shields.io/badge/🤗-Hugging%20Face%20Space-yellow?logo=huggingface)
 ![Hugging Face Live](https://img.shields.io/badge/demo-online-brightgreen?logo=huggingface)
-[![Open in HF](https://img.shields.io/badge/🚀-Try%20Live%20Demo-orange)](https://huggingface.co/spaces/medissaoui7/zada)
+[![Open in HF](https://img.shields.io/badge/🚀-Try%20Live%20Demo-orange)](https://huggingface.co/spaces/medissaoui7/cartage)
 
-![GitHub last commit](https://img.shields.io/github/last-commit/medissaoui711/zada)
-![GitHub repo size](https://img.shields.io/github/repo-size/medissaoui711/zada)
-![GitHub stars](https://img.shields.io/github/stars/medissaoui711/zada?style=social)
-![GitHub forks](https://img.shields.io/github/forks/medissaoui711/zada?style=social)
-![GitHub issues](https://img.shields.io/github/issues/medissaoui711/zada)
-![GitHub license](https://img.shields.io/github/license/medissaoui711/zada)
+![GitHub last commit](https://img.shields.io/github/last-commit/medissaoui711/cartage)
+![GitHub repo size](https://img.shields.io/github/repo-size/medissaoui711/cartage)
+![GitHub stars](https://img.shields.io/github/stars/medissaoui711/cartage?style=social)
+![GitHub forks](https://img.shields.io/github/forks/medissaoui711/cartage?style=social)
+![GitHub issues](https://img.shields.io/github/issues/medissaoui711/cartage)
+![GitHub license](https://img.shields.io/github/license/medissaoui711/cartage)
 
-## 🚀 Try ZADA Live
+## 🚀 Try cartage Live
 
-[![Open in Hugging Face](https://img.shields.io/badge/🤗-Open%20in%20Hugging%20Face%20Spaces-blue?style=for-the-badge&logo=huggingface)](https://huggingface.co/spaces/medissaoui7/zada)
+[![Open in Hugging Face](https://img.shields.io/badge/🤗-Open%20in%20Hugging%20Face%20Spaces-blue?style=for-the-badge&logo=huggingface)](https://huggingface.co/spaces/medissaoui7/cartage)
 
-**👉 [huggingface.co/spaces/medissaoui7/zada](https://huggingface.co/spaces/medissaoui7/zada)**
+**👉 [huggingface.co/spaces/medissaoui7/cartage](https://huggingface.co/spaces/medissaoui7/cartage)**
 
 ---
 
@@ -40,23 +40,23 @@ Where Code Grows
 
 | Platform | Link |
 |----------|------|
-| 🤗 **Hugging Face Space** | [medissaoui7/zada](https://huggingface.co/spaces/medissaoui7/zada) |
-| 💻 **GitHub Repository** | [medissaoui711/zada](https://github.com/medissaoui711/zada) |
-| 🌐 **Website** | [zada-8xz.pages.dev](https://zada-8xz.pages.dev) |
+| 🤗 **Hugging Face Space** | [medissaoui7/cartage](https://huggingface.co/spaces/medissaoui7/cartage) |
+| 💻 **GitHub Repository** | [medissaoui711/cartage](https://github.com/medissaoui711/cartage) |
+| 🌐 **Website** | [cartage-8xz.pages.dev](https://cartage-8xz.pages.dev) |
 
 ---
 
 ## منصة برمجية ذكية متعددة المصادر - تجمع بين النماذج المحلية والسحابية
 
-[Report Bug](https://github.com/medissaoui711/zada/issues) ·
-[Request Feature](https://github.com/medissaoui711/zada/issues) ·
+[Report Bug](https://github.com/medissaoui711/cartage/issues) ·
+[Request Feature](https://github.com/medissaoui711/cartage/issues) ·
 [Contact](https://github.com/medissaoui711)
 
 ---
 
 ## 🎯 Overview
 
-**ZADA** is a production-ready AI programming assistant that integrates:
+**cartage** is a production-ready AI programming assistant that integrates:
 
 | Component | Description |
 | --------- | ----------- |
@@ -70,7 +70,7 @@ Built for developers who want **flexibility**, **privacy**, and **power** in the
 
 ---
 
-## 💪 Why ZADA?
+## 💪 Why cartage?
 
 | Strength | Description |
 | -------- | ----------- |
@@ -127,8 +127,8 @@ ollama pull qwen2.5-coder
 
 ```bash
 # Clone the repository
-git clone https://github.com/medissaoui711/zada.git
-cd zada
+git clone https://github.com/medissaoui711/cartage.git
+cd cartage
 
 # Create virtual environment
 python -m venv .venv
@@ -145,13 +145,13 @@ pip install -r requirements.txt
 # Build the resource database (one time only)
 python copy_resources.py
 
-# Run ZADA
-python zada.py
+# Run cartage
+python cartage.py
 ```
 
 ### First Run
 
-When you first run ZADA, you'll be prompted to select a provider:
+When you first run cartage, you'll be prompted to select a provider:
 
 ```bash
 🔌 جاري فحص مزودي الخدمة...
@@ -234,7 +234,7 @@ export OPENAI_API_KEY="sk-..."
 
 ```text
 ┌─────────────────────────────────────────────────────────────┐
-│                      ZADA CLI (Rich UI)                     │
+│                      cartage CLI (Rich UI)                     │
 ├─────────────────────────────────────────────────────────────┤
 │                    Command Parser & Router                  │
 ├───────────────┬───────────────┬─────────────────────────────┤
@@ -242,7 +242,7 @@ export OPENAI_API_KEY="sk-..."
 │   /review     │   /fix        │   /build /file /shield      │
 │   /provider   │   /providers  │   /learn /help /quit        │
 ├───────────────┴───────────────┴─────────────────────────────┤
-│                    ZadaCore (Orchestrator)                  │
+│                    cartageCore (Orchestrator)                  │
 ├───────────────┬───────────────┬─────────────────────────────┤
 │  load_agents  │  load_skills  │  load_rules  │  SQLite      │
 ├───────────────┴───────────────┴───────────────┴─────────────┤
@@ -256,18 +256,18 @@ export OPENAI_API_KEY="sk-..."
 ## 📁 Project Structure
 
 ```text
-zada/
-├── zada.py                 # Main application
+cartage/
+├── cartage.py                 # Main application
 ├── copy_resources.py       # Resource extractor
 ├── requirements.txt        # Python dependencies
-├── run_zada.bat           # Windows launcher
+├── run_cartage.bat           # Windows launcher
 ├── README.md              # Documentation
 ├── LICENSE                # License file
 ├── .gitignore             # Git ignore rules
 └── .venv/                 # Virtual environment
 
-~/.zada/                   # User data directory
-├── zada.db                # SQLite database
+~/.cartage/                   # User data directory
+├── cartage.db                # SQLite database
 ├── agents/                # 47 specialized agents
 ├── skills/                # 59 categorized skills
 ├── rules/                 # 12 coding rules
@@ -315,5 +315,5 @@ For licensing inquiries: [GitHub Profile](https://github.com/medissaoui711)
 ---
 
 Built with 🏔️ by [medissaoui711](https://github.com/medissaoui711) ·
-[Report Bug](https://github.com/medissaoui711/zada/issues) ·
-[Request Feature](https://github.com/medissaoui711/zada/issues)
+[Report Bug](https://github.com/medissaoui711/cartage/issues) ·
+[Request Feature](https://github.com/medissaoui711/cartage/issues)

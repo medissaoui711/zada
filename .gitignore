@@ -38,6 +38,7 @@ Thumbs.db
 
 # Local tools (not for sharing)
 copy_prompts.py
+rename_to_cartage.ps1
 
 # ZADA data
 .zada/
